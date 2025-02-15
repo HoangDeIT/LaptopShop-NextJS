@@ -59,7 +59,7 @@ export function Register() {
                 address
             }
         });
-        if (res.statusCode === 200 || 201) {
+        if (res.statusCode === 200 || res.statusCode === 201) {
             toast.success("Register success")
             setAddress("")
             setConfirmPassword("")

@@ -1,8 +1,8 @@
-const HelloWord = () => {
+const AdminPage = () => {
     return (
         <div>
-            Hello
+            Hello this Admin
         </div>
     )
 }
-export default HelloWord;
+export default AdminPage;

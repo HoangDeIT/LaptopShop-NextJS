@@ -1,9 +1,9 @@
-import Register from "@/component/auth/register";
+import Login from "@/component/auth/login";
 
-const Login = () => {
+
+const LoginPage = () => {
     return (
-        <>
-        </>
+        <Login />
     )
 }
-export default Login;
+export default LoginPage;

@@ -15,6 +15,7 @@
     "@mui/icons-material": "^6.4.3",
     "@mui/material": "^6.4.3",
     "@mui/material-nextjs": "^6.4.3",
+    "dayjs": "^1.11.13",
     "next": "15.1.7",
     "next-auth": "^4.24.11",
     "query-string": "^9.1.1",
