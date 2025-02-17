@@ -1,8 +1,9 @@
+import SlideShow from "@/component/layout/indexLayout/swiper";
+import { Dashboard } from "@mui/icons-material";
+
 const HomePage = () => {
     return (
-        <div>
-            Hello this is User page
-        </div>
+        <SlideShow />
     )
 }
 export default HomePage;

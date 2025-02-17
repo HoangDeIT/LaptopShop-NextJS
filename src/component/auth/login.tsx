@@ -120,7 +120,6 @@ const Login = () => {
             <Button variant="contained" sx={{
                 width: "100%",
                 color: "white",
-                backgroundColor: "blue",
                 '&:hover': {
                     backgroundColor: "blue",
                 },
