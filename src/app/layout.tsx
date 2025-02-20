@@ -7,6 +7,8 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import ThemeClient from "@/component/theme/theme.client";
 import AppProvider from "@/context/app.context";
 import NextAuthWarper from "@/lib/next.auth.wrapper";
+import LocalizationProviderClient from "@/lib/localization.provider";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,8 +39,10 @@ export default function RootLayout({
           <AppProvider>
             <ThemeClient>
               <NextAuthWarper>
-                {children}
-                <ShowToast />
+                <LocalizationProviderClient>
+                  {children}
+                  <ShowToast />
+                </LocalizationProviderClient>
               </NextAuthWarper>
             </ThemeClient>
           </AppProvider>

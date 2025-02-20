@@ -21,7 +21,7 @@ declare global {
 
     interface IModelPaginate<T> {
         meta: {
-            current: number;
+            page: number;
             pageSize: number;
             pages: number;
             total: number;
@@ -43,11 +43,17 @@ declare global {
         userName: string;       // Ví dụ: "Admin"
         email: string;          // Ví dụ: "hoangde@gmail.com"
         role: 'ADMIN' | 'USER'; // Nếu chỉ có 2 loại role, nếu nhiều hơn bạn có thể dùng string
-        typeEnum: 'SYSTEM' | 'GOOGLE' | 'GITHUB'; // Giới hạn các giá trị hợp lệ, hoặc dùng string
+        type: 'SYSTEM' | 'GOOGLE' | 'GITHUB'; // Giới hạn các giá trị hợp lệ, hoặc dùng string
         image: string | null;   // Nếu không có hình thì null
         createdAt: string;      // Ví dụ: "2025-02-13T15:10:11.109666Z"
         updatedAt: string | null;
         createdBy: string;      // Ví dụ: "Admin"
         updatedBy: string | null;
+    }
+    interface IMeta {
+        page: number;
+        pageSize: number;
+        pages: number;
+        total: number;
     }
 }
