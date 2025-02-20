@@ -12,21 +12,23 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { sendRequest } from '@/utils/api';
 import { toast } from 'react-toastify';
+import { usePathname, useRouter } from 'next/navigation';
 
 
 interface IProps {
     open: boolean,
     setOpen: (v: boolean) => void,
-    fetchUser: () => Promise<void>
+    meta: IMeta | undefined
 }
 export default function ModalAddUser(props: IProps) {
-    const { open, setOpen, fetchUser } = props
+    const { open, setOpen, meta } = props
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [userName, setUserName] = useState("")
     const [role, setRole] = useState<"USER" | "ADMIN">("USER");
     const { data } = useSession();
-
+    const pathName = usePathname()
+    const router = useRouter()
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -34,7 +36,8 @@ export default function ModalAddUser(props: IProps) {
     const handleClose = () => {
         setOpen(false);
     };
-    const handleSubmit = async () => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
         const res = await sendRequest<IBackendRes<IUser>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "POST", headers: {
                 Authorization: `Bearer ${data?.access_token}`,
@@ -44,16 +47,23 @@ export default function ModalAddUser(props: IProps) {
             }
         })
         if (res.data) {
-            await fetchUser();
+            if (meta?.page !== meta?.pageSize) {
+                router.replace(`${pathName}?page=${meta?.pageSize}&size=10`, { scroll: false })
+            } else {
+                router.refresh();
+            }
             toast.success("Create success");
             setEmail("")
             setPassword("")
             setUserName("")
             setRole("USER")
+            setOpen(false);
         } else {
             toast.error(res.error);
 
         }
+
+
     }
     return (
         <>
@@ -63,7 +73,7 @@ export default function ModalAddUser(props: IProps) {
                 slotProps={{
                     paper: {
                         component: 'form',
-                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(),
+                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(event),
                     },
                 }}
             >

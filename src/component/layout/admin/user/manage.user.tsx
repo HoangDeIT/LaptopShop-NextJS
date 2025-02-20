@@ -1,25 +1,25 @@
 "use client"
 import { Table } from "@mui/joy"
-import { Alert, Box, Button, Container, Divider, FormControl, Grid2, IconButton, InputLabel, MenuItem, Popover, Select, Snackbar, Typography, Accordion, AccordionDetails, AccordionSummary, TablePagination } from "@mui/material";
+import { Alert, Box, Button, Container, FormControl, MenuItem, Popover, Select, Snackbar, Typography, TablePagination } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import ModalAddUser from "./modal.add.user";
-import { getUser } from "@/utils/action/actionUser";
-import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { sendRequest } from "@/utils/api";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import GetAppIcon from '@mui/icons-material/GetApp';
-import SearchIcon from '@mui/icons-material/Search';
 import PopoverUserFilter from "./popover.user.filter";
 import PopoverUserSearch from "./popover.user.search";
 import debounce from "debounce";
 import { sfAnd, sfEqual, sfGe, sfIn, sfLike, sfLt } from "spring-filter-query-builder";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import PopoverUserSort from "./popover.user.sort";
-const ManageUser = () => {
+import { revalidateName } from "@/utils/action/action";
+interface IProps {
+    meta?: IMeta,
+    user?: IUser[],
+}
+const ManageUser = (props: IProps) => {
+    const { meta, user } = props
     const [openModal, setOpenModal] = useState(false)
     const [openSnackBarRole, setOpenSnackBarRole] = useState(false)
     const [openSnackBarDeleteUser, setOpenSnackBaDeleteUser] = useState(false)
@@ -33,13 +33,6 @@ const ManageUser = () => {
 
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
     const theadRef = useRef(null);
-    const [user, setUser] = useState<undefined | IUser[]>();
-    const [meta, setMeta] = useState<undefined | IMeta>();
-
-    const page = searchParams.get("page")
-    let size = searchParams.get("size")
-    let filter = searchParams.get("filter")
-    let sortParam = searchParams.get("sort")
     //state for filter and search
     const [role, setRole] = useState<string[]>([])
     const [type, setType] = useState<string[]>([])
@@ -51,32 +44,7 @@ const ManageUser = () => {
     //state for sort
     const [sort, setSort] = useState<"id" | "createdAt" | "email" | "userName" | "role" | "type" | "createdBy" | null>(null)
     const [sortBy, setSortBy] = useState<"asc" | "desc" | null>(null)
-    const fetchUser = async (param?: Object) => {
-        console.log(param)
-        const res = await getUser(param);
-        setUser(res.data?.result)
-        setMeta(res.data?.meta)
-        const meta1 = res.data?.meta
-        if (meta1?.page.toString() !== searchParams.get("page")) {
-            const url = new URLSearchParams(searchParams);
-            url.set("page", meta1?.page === undefined ? "1" : meta1?.page.toString())
-            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-        }
-    }
-    useEffect(() => {
-        if (size !== "10" && size !== "25" && size !== "50" && size !== "100") {
-            const url = new URLSearchParams(searchParams);
-            url.set("size", "25")
-            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-        }
-        if (page == null) {
-            const url = new URLSearchParams(searchParams);
-            url.set("page", "1")
-            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-        }
-        fetchUser({ page, size, filter, sort: sortParam })
-        console.log("dsda")
-    }, [page, size, filter, sortParam])
+
     const debouncedFilter = useRef(debounce((role, type, searchEmail, searchUserName, startDate, endDate, sort, sortBy) => {
         const filterBuilder = []
         if (role.length > 0) {
@@ -112,12 +80,18 @@ const ManageUser = () => {
         //han che goi api qua nhieu
         debouncedFilter(role, type, searchEmail, searchUserName, startDate, endDate, sort, sortBy);
     }, [role, type, searchEmail, searchUserName, startDate, endDate])
+    //@ts-ignore
     useEffect(() => {
-        if (sort && sortBy) {
-            const url = new URLSearchParams(searchParams);
-            url.set("sort", `${sort},${sortBy}`)
-            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
+        const sortFunction = async () => {
+            if (sort && sortBy) {
+                const url = new URLSearchParams(searchParams);
+                url.set("sort", `${sort},${sortBy}`)
+                await revalidateName("get-user");
+
+                router.replace(`${pathName}?${url.toString()}`, { scroll: false })
+            }
         }
+        sortFunction()
     }, [sort, sortBy])
     const updateRole = async (role: "ADMIN" | "USER", id: number) => {
         const res = await sendRequest({
@@ -128,10 +102,10 @@ const ManageUser = () => {
                 role, id
             }
         })
-        await fetchUser({ page, size, filter, sort: sortParam })
+
         setOpenSnackBarRole(true);
         // await revalidateName("get-user");
-        // router.refresh()
+        router.refresh()
 
     }
     const handleUndoRole = async () => {
@@ -145,7 +119,7 @@ const ManageUser = () => {
         })
         setChangeUndo(null)
         setOpenSnackBarRole(false)
-        await fetchUser({ page, size, filter, sort: sortParam })
+        router.refresh();
     }
     const handleDeleteUser = async () => {
 
@@ -155,8 +129,10 @@ const ManageUser = () => {
             }
         })
         setAnchorEl(null);
-        await fetchUser({ page, size, filter, sort: sortParam })
         setOpenSnackBaDeleteUser(true);
+
+        await revalidateName("get-user");
+        router.refresh();
     }
     const handleUndoDeleteUser = async () => {
         const res = await sendRequest({
@@ -164,7 +140,7 @@ const ManageUser = () => {
                 Authorization: `Bearer ${session?.data?.access_token}`,
             }
         })
-        await fetchUser({ page, size, filter, sort: sortParam })
+        router.refresh();
         setDeleteId(0);
         setOpenSnackBaDeleteUser(false);
 
@@ -255,7 +231,7 @@ const ManageUser = () => {
                                         router.replace(`${pathName}?${url.toString()}`, { scroll: false })
                                     }}
                                     rowsPerPage={meta?.pageSize ?? 10}
-                                    onRowsPerPageChange={(e) => {
+                                    onRowsPerPageChange={async (e) => {
                                         const url = new URLSearchParams(searchParams);
                                         url.set("size", e.target.value)
                                         router.replace(`${pathName}?${url.toString()}`, { scroll: false })
@@ -269,7 +245,7 @@ const ManageUser = () => {
             </Box>
 
 
-            <ModalAddUser open={openModal} setOpen={setOpenModal} fetchUser={fetchUser} />
+            <ModalAddUser open={openModal} setOpen={setOpenModal} meta={meta} />
             <Snackbar open={openSnackBarRole} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
                 <Alert
                     onClose={() => setOpenSnackBarRole(false)}

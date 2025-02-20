@@ -1,21 +1,47 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import ManageUser from "@/component/layout/admin/user/manage.user";
 import { sendRequest } from "@/utils/api";
-import { Table } from "@mui/joy"
-import { Button } from "@mui/material";
-const rows = [
-    { name: 'Frozen yoghurt', calories: 159, fat: 6.0, protein: 24, carbs: 4.0 },
-    { name: 'Ice cream sandwich', calories: 237, fat: 9.0, protein: 37, carbs: 4.3 },
-    { name: 'Eclair', calories: 262, fat: 16.0, protein: 24, carbs: 6.0 },
-    { name: 'Cupcake', calories: 305, fat: 3.7, protein: 67, carbs: 4.3 },
-    { name: 'Gingerbread', calories: 356, fat: 16.0, protein: 49, carbs: 3.9 }
-];
+import { getServerSession } from "next-auth";
+const ManageUserPage = async (
+    {
+        searchParams,
+    }: {
+        searchParams: Promise<{ filter: string, page: number, size: number, sort: string }>
+    }
+) => {
+    const filter = (await searchParams).filter;
+    let page = (await searchParams).page;
+    const sort = (await searchParams).sort;
+    let size = (await searchParams).size;
+    size = Number(size)
+    if (size !== 10 && size !== 25 && size !== 50 && size !== 100) {
+        size = 25
+    }
+    if (page == null) {
+        page = 1
+    }
+    console.log("this is server side")
+    const queryString = { page, size, filter, sort };
+    const session = await getServerSession(authOptions);
+    const res = await sendRequest<IBackendRes<IModelPaginate<IUser>>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "GET",
+        headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+        },
+        nextOption: {
+            next: { tags: ['get-user'] }
+        }, queryParams:
+            queryString
 
-const ManageUserPage = async () => {
+    })
+
+    const meta = res.data?.meta
+    const user = res.data?.result
+
 
     return (
         <>
-
-            <ManageUser />
+            <ManageUser meta={meta} user={user} />
         </>
     )
 }
