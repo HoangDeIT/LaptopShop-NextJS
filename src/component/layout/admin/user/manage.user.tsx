@@ -148,7 +148,6 @@ const ManageUser = (props: IProps) => {
 
     return (
         <Container maxWidth="xl">
-
             <Box sx={{
                 display: "flex",
                 justifyContent: "space-between"

@@ -24,6 +24,11 @@ import Logo from "@/../public/LogoAdmin.png"
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 const drawerWidth = 240;
+import FactoryIcon from '@mui/icons-material/Factory';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import CommentIcon from '@mui/icons-material/Comment';
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 interface Props {
@@ -89,6 +94,56 @@ export default function ResponsiveDrawer(props: Props) {
                                 <GroupIcon />
                             </ListItemIcon>
                             <ListItemText primary={"Manage user"} />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
+                <Link href={"/admin/factory"} style={{ textDecoration: "none", color: 'inherit' }}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={"/admin/factory" === pathname}>
+                            <ListItemIcon>
+                                <FactoryIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Manage Factory"} />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
+                <Link href={"/admin/product"} style={{ textDecoration: "none", color: 'inherit' }}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={"/admin/product" === pathname}>
+                            <ListItemIcon>
+                                <InventoryIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Manage Product"} />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
+                <Link href={"/admin/order"} style={{ textDecoration: "none", color: 'inherit' }}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={"/admin/order" === pathname}>
+                            <ListItemIcon>
+                                <ListAltIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Manage Product"} />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
+                <Link href={"/admin/banner"} style={{ textDecoration: "none", color: 'inherit' }}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={"/admin/banner" === pathname}>
+                            <ListItemIcon>
+                                <ViewCarouselIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Manage banner"} />
+                        </ListItemButton>
+                    </ListItem>
+                </Link>
+                <Link href={"/admin/comment"} style={{ textDecoration: "none", color: 'inherit' }}>
+                    <ListItem disablePadding>
+                        <ListItemButton selected={"/admin/comment" === pathname}>
+                            <ListItemIcon>
+                                <CommentIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={"Manage Comment"} />
                         </ListItemButton>
                     </ListItem>
                 </Link>

@@ -11,13 +11,15 @@ export const sendRequest = async<T>(props: IRequest) => {
         headers = {},
         nextOption = {}
     } = props
+    const isFormData = body instanceof FormData;
     const options = {
         method: method,
-        headers: new Headers({
-            ...headers,
-            "Content-Type": "application/json"
-        }),
-        body: body ? JSON.stringify(body) : null,
+        headers: isFormData ? new Headers(headers) :
+            new Headers({
+                ...headers,
+                "Content-Type": "application/json"
+            }),
+        body: body ? (isFormData ? body : JSON.stringify(body)) : null,
         ...nextOption
     }
     if (useCredentials) options.credentials = "include";

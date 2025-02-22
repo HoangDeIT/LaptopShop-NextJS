@@ -37,8 +37,6 @@ const ManageUserPage = async (
 
     const meta = res.data?.meta
     const user = res.data?.result
-
-
     return (
         <>
             <ManageUser meta={meta} user={user} />
