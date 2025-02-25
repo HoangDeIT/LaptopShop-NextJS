@@ -39,6 +39,9 @@ export default function ModalAddFactory(props: IProps) {
     const [country, setCountry] = useState("")
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [file, setFile] = useState<File | null>(null);
+    const [fileLaptop, setFileLaptop] = useState<File | null>(null);
+    const [previewUrlLaptop, setPreviewUrlLaptop] = useState<string | null>(null);
+
     const { data } = useSession();
     const router = useRouter();
     const handleClose = () => {
@@ -57,11 +60,26 @@ export default function ModalAddFactory(props: IProps) {
             reader.readAsDataURL(file);
         }
     };
-    const handleSubmit = async () => {
+    const handleFileChangeLaptop = (event: any) => {
+        const file = event.target.files[0];
+        setFileLaptop(file);
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                setPreviewUrlLaptop(reader.result?.toString() ?? null);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    };
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
         const form = new FormData();
         form.append("name", name)
         form.append("country", country)
         form.append("file", file as Blob)
+        form.append("fileLaptop", fileLaptop as Blob)
         const res = await sendRequest<IBackendRes<IUser>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/factory`, method: "POST", headers: {
                 Authorization: `Bearer ${data?.access_token}`,
@@ -90,7 +108,7 @@ export default function ModalAddFactory(props: IProps) {
                 slotProps={{
                     paper: {
                         component: 'form',
-                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(),
+                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(event),
                     },
                 }}
             >
@@ -153,6 +171,7 @@ export default function ModalAddFactory(props: IProps) {
 
                                     color="default" badgeContent={
                                         <div onClick={() => {
+                                            setFile(null)
                                             setPreviewUrl(null)
                                         }}
                                             style={{
@@ -170,7 +189,53 @@ export default function ModalAddFactory(props: IProps) {
                             </Box>
                         </div>
                     }
+                    {!previewUrlLaptop ? <Button
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
+                    >
+                        Upload files laptop
+                        <VisuallyHiddenInput
+                            type="file"
+                            onChange={(event) => handleFileChangeLaptop(event)}
+                            multiple={false}
 
+                        />
+                    </Button> :
+                        <div>
+                            <h3>Preview Image</h3>
+                            <Box
+                                sx={{
+
+                                    width: '100%',
+                                    display: "flex",
+                                    justifyContent: "center"
+
+                                }}>
+                                <Badge
+
+                                    color="default" badgeContent={
+                                        <div onClick={() => {
+                                            setFileLaptop(null)
+                                            setPreviewUrlLaptop(null)
+                                        }}
+                                            style={{
+                                                cursor: 'pointer'
+                                            }}>
+                                            <DisabledByDefaultIcon color='info' />
+                                        </div>
+                                    }>
+                                    <img
+                                        src={previewUrlLaptop}
+                                        alt="Preview"
+                                        style={{ maxWidth: '300px', marginTop: '20px' }}
+                                    />
+                                </Badge>
+                            </Box>
+                        </div>
+                    }
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>

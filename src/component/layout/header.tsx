@@ -1,5 +1,4 @@
 "use client"
-import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -16,23 +15,62 @@ import AdbIcon from '@mui/icons-material/Adb';
 import Image from 'next/image';
 import Logo from "@/../public/logo.png"
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { alpha, Badge, } from '@mui/material';
+import { alpha, Autocomplete, Badge, Divider, InputAdornment, InputBase, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popover, styled, TextField, } from '@mui/material';
 import CartDrawer from './card.drawer';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import Stack from '@mui/joy/Stack';
 import LaptopAL from "@/../public/LaptopAI.jpg"
-import { Autocomplete, AutocompleteOption, ListItemContent, ListItemDecorator, Typography } from '@mui/joy';
+import { AutocompleteOption, ListItemContent, ListItemDecorator, Typography } from '@mui/joy';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import debounce from 'debounce';
+import { sfIn, sfLike } from 'spring-filter-query-builder';
+import { sendRequest } from '@/utils/api';
+import { Search } from '@mui/icons-material';
+import InboxIcon from '@mui/icons-material/Inbox';
+import DraftsIcon from '@mui/icons-material/Drafts';
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 interface IData {
     title: string,
     year: number
 }
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+}));
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: 'inherit',
+    width: '100%',
+    '& .MuiInputBase-input': {
+        padding: theme.spacing(1, 1, 1, 0),
+        // vertical padding + font size from searchIcon
+        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+        transition: theme.transitions.create('width'),
+        [theme.breakpoints.up('sm')]: {
+            width: '12ch',
+            '&:focus': {
+                width: '20ch',
+            },
+        },
+    },
+}));
 function ResponsiveAppBar() {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-    const [open, setOpen] = React.useState(false)
+    const [anchorEl, setAnchorEl] = useState<any>(null);
+
+    const [search, setSearch] = useState<string>('');
+    const [data, setData] = useState<IProduct[]>([])
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+    const [open, setOpen] = useState(false)
+    const fetchSearch = () => {
+
+    }
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
     };
@@ -47,6 +85,34 @@ function ResponsiveAppBar() {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+    const fetchData = async (filter: string) => {
+        const res = await sendRequest<IBackendRes<IModelPaginate<IProduct>>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/product`, method: "GET",
+            nextOption: {
+                next: { tags: ['get-product'] }
+            },
+            queryParams: {
+                filter,
+                size: 100
+            }
+        })
+        const data1 = res.data?.result.map((item) => ({ ...item, title: item.name }))
+        console.log(data1)
+        setData(data)
+    }
+    const debouncedFilter = useRef(debounce((search) => {
+        if (search.length > 0) {
+            const filter = sfLike("name", search).toString();
+            fetchData(filter)
+        }
+
+
+    }, 1000)).current
+    useEffect(() => {
+        console.log("dsalkhda")
+        debouncedFilter(search);
+    }, [search])
+
 
     return (
         <>
@@ -64,16 +130,18 @@ function ResponsiveAppBar() {
                             justifyContent: "center",
                             alignContent: "center"
                         }}>
-                            <FormLabel><SearchIcon /></FormLabel>
+                            {/* <FormLabel><SearchIcon /></FormLabel>
                             <Autocomplete
+                                onChange={(e, v) => console.log(v)}
                                 sx={{ width: { xl: "800px" }, }}
                                 placeholder="Search anything"
                                 type="search"
                                 freeSolo
                                 disableClearable
-                                options={top100Films}
+                                value={search}
+                                options={data!}
                                 //@ts-ignore
-                                getOptionLabel={(option) => option.title}
+                                getOptionLabel={(option) => option.name}
                                 renderOption={(props, option) => (
                                     <AutocompleteOption {...props} key={Math.random().toString()}>
                                         <ListItemDecorator>
@@ -86,14 +154,96 @@ function ResponsiveAppBar() {
                                             />
                                         </ListItemDecorator>
                                         <ListItemContent sx={{ fontSize: 'sm' }}>
-                                            {option.title}
+                                            {option.name}
                                             <Typography level="body-xs">
-                                                ({option.year}) +{option.title}
+                                                ({option.price})
                                             </Typography>
                                         </ListItemContent>
                                     </AutocompleteOption>
                                 )}
-                            />
+                            /> */}
+                            {/* <Box>
+                                <Autocomplete
+                                    disablePortal
+                                    options={top100Films}
+                                    sx={{ width: 300 }}
+                                    renderInput={(params) => <TextField {...params} label="Movie" />}
+                                />
+                                <Box sx={{ width: '100%', position: "relative", maxWidth: 360, bgcolor: 'background.paper', maxHeight: "200px", overflowY: "scroll" }}>
+                                    <nav aria-label="main mailbox folders">
+                                        <List sx={{ position: "absolute" }}>
+                                            <ListItem disablePadding>
+                                                <ListItemButton>
+                                                    <ListItemIcon>
+                                                        <InboxIcon />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary="Inbox" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                            <ListItem disablePadding>
+                                                <ListItemButton>
+                                                    <ListItemIcon>
+                                                        <DraftsIcon />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary="Drafts" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        </List>
+                                    </nav>
+                                    <Divider />
+                                    <nav aria-label="secondary mailbox folders">
+                                        <List>
+                                            <ListItem disablePadding>
+                                                <ListItemButton>
+                                                    <ListItemText primary="Trash" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                            <ListItem disablePadding>
+                                                <ListItemButton component="a" href="#simple-list">
+                                                    <ListItemText primary="Spam" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        </List>
+                                    </nav>
+                                </Box>
+                            </Box> */}
+                            <Box sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                alignSelf: "center"
+                            }}>
+                                <TextField
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Search />
+                                                </InputAdornment>
+                                            ),
+                                        },
+                                    }}
+                                    placeholder="Search…"
+                                    value={search}
+                                    onFocus={(e) => { setAnchorEl(e.currentTarget) }}
+                                    onChange={(e) => {
+
+                                        setSearch(e.target.value)
+                                    }}
+                                    sx={{
+                                        border: "1px solid black"
+                                    }}
+                                />
+
+                                <Popover
+                                    open={Boolean(anchorEl)}
+                                    anchorEl={anchorEl}
+                                    onClose={() => setAnchorEl(null)}
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'left',
+                                    }}
+                                />
+                            </Box>
                         </FormControl>
                         <Box sx={{
                             display: "flex",

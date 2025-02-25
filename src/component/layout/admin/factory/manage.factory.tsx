@@ -10,6 +10,8 @@ import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ModalAddFactory from "./modal.add.factory";
 import Image from "next/image";
+import { toast } from "react-toastify";
+import { revalidateName } from "@/utils/action/action";
 interface IProps {
     data?: IFactory[]
 }
@@ -45,28 +47,37 @@ const ManageFactory = (props: IProps) => {
     //     setOpenSnackBarRole(false)
     //     await fetchUser({ page, size, filter, sort: sortParam })
     // }
-    // const handleDeleteUser = async () => {
+    const handleDeleteFactory = async () => {
 
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user/${deleteId}`, method: "DELETE", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         }
-    //     })
-    //     setAnchorEl(null);
-    //     await fetchUser({ page, size, filter, sort: sortParam })
-    //     setOpenSnackBaDeleteUser(true);
-    // }
-    // const handleUndoDeleteUser = async () => {
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user/${deleteId}`, method: "POST", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         }
-    //     })
-    //     await fetchUser({ page, size, filter, sort: sortParam })
-    //     setDeleteId(0);
-    //     setOpenSnackBaDeleteUser(false);
+        const res = await sendRequest<IBackendRes<IFactory>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/factory/${deleteId}`, method: "DELETE", headers: {
+                Authorization: `Bearer ${session?.data?.access_token}`,
+            }
+        })
+        console.log(res)
+        if (!res.error) {
+            setOpenSnackBaDeleteUser(true);
+            await revalidateName("get-factory");
 
-    // }
+            router.refresh();
+        } else {
+            toast.error(res.error)
+        }
+        setAnchorEl(null);
+
+    }
+    const handleUndoDeleteFactory = async () => {
+        const res = await sendRequest({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/factory/${deleteId}`, method: "POST", headers: {
+                Authorization: `Bearer ${session?.data?.access_token}`,
+            }
+        })
+        await revalidateName("get-factory");
+        router.refresh();
+        setDeleteId(0);
+        setOpenSnackBaDeleteUser(false);
+
+    }
 
     return (
         <Container maxWidth="xl">
@@ -109,7 +120,7 @@ const ManageFactory = (props: IProps) => {
                                         setDeleteId(row.id);
                                         setAnchorEl(e.currentTarget)
                                     }}
-                                        style={{ display: "inline-block" }}>
+                                        style={{ display: "inline-block", cursor: "pointer" }}>
                                         <DeleteIcon color="error" />
                                     </div>
                                 </td>
@@ -142,20 +153,20 @@ const ManageFactory = (props: IProps) => {
 
 
             <ModalAddFactory open={openModal} setOpen={setOpenModal} />
-            {/* <Snackbar open={openSnackBarRole} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
+            <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
                 <Alert
-                    onClose={() => setOpenSnackBarRole(false)}
+                    onClose={() => setOpenSnackBaDeleteUser(false)}
                     severity="success"
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
                     Update role success
-                    <Button color="inherit" size="small" onClick={handleUndoRole}>
+                    <Button color="inherit" size="small" onClick={handleUndoDeleteFactory}>
                         UNDO
                     </Button>
                 </Alert>
             </Snackbar>
-            <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBaDeleteUser(false)}>
+            {/* <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBaDeleteUser(false)}>
                 <Alert
                     onClose={() => setOpenSnackBaDeleteUser(false)}
                     severity="warning"
@@ -169,7 +180,7 @@ const ManageFactory = (props: IProps) => {
                 </Alert>
             </Snackbar> */}
             {/* Popup delete */}
-            {/* <Popover
+            <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
                 onClose={() => setAnchorEl(null)}
@@ -188,11 +199,11 @@ const ManageFactory = (props: IProps) => {
                     Cancel
                 </Button>
                 <Button onClick={() => {
-                    handleDeleteUser()
+                    handleDeleteFactory()
                 }} color="error" variant="contained" sx={{ m: 1 }}>
                     Confirm
                 </Button>
-            </Popover> */}
+            </Popover>
 
         </Container>
     )

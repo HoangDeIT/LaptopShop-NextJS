@@ -213,6 +213,12 @@ const ManageProduct = (props: IProps) => {
                         stripe="odd"
                         hoverRow
                         sx={{
+                            '& thead': {
+                                position: 'sticky',
+                                top: 0, // Stick to the top
+                                zIndex: 2, // Ensure it appears above other content
+                                background: 'white', // Prevent underlying content from showing through
+                            },
                             '& tr > *:first-child': {
                                 position: 'sticky',
                                 left: 0,
@@ -223,13 +229,6 @@ const ManageProduct = (props: IProps) => {
                                 position: 'sticky',
                                 right: 0,
                                 bgcolor: 'var(--TableCell-headBackground)',
-                            },
-                            '& tfoot td': {
-                                position: 'sticky',
-                                bottom: 0,
-                                background: 'white',
-                                boxShadow: '0px -1px 3px rgba(0, 0, 0, 0.1)',
-                                zIndex: 1,
                             },
                         }}
                     >

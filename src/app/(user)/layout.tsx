@@ -7,8 +7,10 @@ const UserLayout = ({
 }>) => {
     return (
         <>
-            <ResponsiveAppBar />
-            {children}
+            <div style={{ backgroundColor: "#f5f7fa" }}>
+                <ResponsiveAppBar />
+                {children}
+            </div>
         </>
     )
 }

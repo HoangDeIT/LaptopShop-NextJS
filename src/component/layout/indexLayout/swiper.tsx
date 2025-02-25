@@ -31,29 +31,7 @@ export default function SlideShow() {
             >
 
                 <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
 
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
-
-                <SwiperSlide> <Image src={Logo} alt='Logo' width={300} height={100} /></SwiperSlide>
 
             </Swiper>
         </>
