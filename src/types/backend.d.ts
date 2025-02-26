@@ -49,6 +49,7 @@ declare global {
         updatedAt: string | null;
         createdBy: string;      // Ví dụ: Admin
         updatedBy: string | null;
+        carts: ICart[]
     }
     interface IMeta {
         page: number;
@@ -120,5 +121,9 @@ declare global {
         deletedAt: string | null;
     }
 
-
+    interface ICart {
+        id: number;
+        quantity: number;
+        product: IProduct;
+    }
 }

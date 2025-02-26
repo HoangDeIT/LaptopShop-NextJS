@@ -15,7 +15,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import Image from 'next/image';
 import Logo from "@/../public/logo.png"
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { alpha, Autocomplete, Badge, Divider, InputAdornment, InputBase, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popover, styled, TextField, } from '@mui/material';
+import { alpha, Autocomplete, Badge, Divider, InputAdornment, InputBase, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Popover, styled, TextField, } from '@mui/material';
 import CartDrawer from './card.drawer';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
@@ -29,6 +29,7 @@ import { sendRequest } from '@/utils/api';
 import { Search } from '@mui/icons-material';
 import InboxIcon from '@mui/icons-material/Inbox';
 import DraftsIcon from '@mui/icons-material/Drafts';
+
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 interface IData {
@@ -61,10 +62,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 function ResponsiveAppBar() {
-    const [anchorEl, setAnchorEl] = useState<any>(null);
+    const [isShow, setIsShow] = useState<boolean>(false);
 
     const [search, setSearch] = useState<string>('');
-    const [data, setData] = useState<IProduct[]>([])
+    const [data, setData] = useState<IProduct[] | undefined>([])
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
     const [open, setOpen] = useState(false)
@@ -88,28 +89,24 @@ function ResponsiveAppBar() {
     const fetchData = async (filter: string) => {
         const res = await sendRequest<IBackendRes<IModelPaginate<IProduct>>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/product`, method: "GET",
-            nextOption: {
-                next: { tags: ['get-product'] }
-            },
             queryParams: {
                 filter,
                 size: 100
             }
         })
-        const data1 = res.data?.result.map((item) => ({ ...item, title: item.name }))
-        console.log(data1)
-        setData(data)
+        console.log(res.data?.result)
+        setData(res.data?.result)
     }
     const debouncedFilter = useRef(debounce((search) => {
         if (search.length > 0) {
-            const filter = sfLike("name", search).toString();
+            const filter = sfLike("name", `*${search}*`).toString();
+            console.log(filter)
             fetchData(filter)
         }
 
 
     }, 1000)).current
     useEffect(() => {
-        console.log("dsalkhda")
         debouncedFilter(search);
     }, [search])
 
@@ -162,52 +159,105 @@ function ResponsiveAppBar() {
                                     </AutocompleteOption>
                                 )}
                             /> */}
-                            {/* <Box>
-                                <Autocomplete
-                                    disablePortal
-                                    options={top100Films}
-                                    sx={{ width: 300 }}
-                                    renderInput={(params) => <TextField {...params} label="Movie" />}
-                                />
-                                <Box sx={{ width: '100%', position: "relative", maxWidth: 360, bgcolor: 'background.paper', maxHeight: "200px", overflowY: "scroll" }}>
-                                    <nav aria-label="main mailbox folders">
-                                        <List sx={{ position: "absolute" }}>
-                                            <ListItem disablePadding>
-                                                <ListItemButton>
-                                                    <ListItemIcon>
-                                                        <InboxIcon />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary="Inbox" />
-                                                </ListItemButton>
-                                            </ListItem>
-                                            <ListItem disablePadding>
-                                                <ListItemButton>
-                                                    <ListItemIcon>
-                                                        <DraftsIcon />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary="Drafts" />
-                                                </ListItemButton>
-                                            </ListItem>
-                                        </List>
-                                    </nav>
-                                    <Divider />
-                                    <nav aria-label="secondary mailbox folders">
-                                        <List>
-                                            <ListItem disablePadding>
-                                                <ListItemButton>
-                                                    <ListItemText primary="Trash" />
-                                                </ListItemButton>
-                                            </ListItem>
-                                            <ListItem disablePadding>
-                                                <ListItemButton component="a" href="#simple-list">
-                                                    <ListItemText primary="Spam" />
-                                                </ListItemButton>
-                                            </ListItem>
-                                        </List>
-                                    </nav>
-                                </Box>
-                            </Box> */}
                             <Box sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "start"
+                            }}>
+                                <TextField
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <Search />
+                                                </InputAdornment>
+                                            ),
+                                        },
+                                    }}
+                                    placeholder="Search…"
+                                    value={search}
+                                    onBlur={(e) => { setIsShow(false) }}
+                                    onFocus={(e) => { setIsShow(true) }}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value)
+                                    }}
+                                    sx={{
+                                        border: "1px solid black",
+                                        borderRadius: "10px",
+                                        width: "800px",
+                                    }}
+                                />
+                                {
+                                    <div style={{ position: "relative", display: isShow ? "block" : "none" }}>
+                                        <Box sx={{
+                                            width: '800px',
+                                            position: "absolute",
+                                            zIndex: 200,
+                                            bgcolor: 'background.paper',
+                                            maxHeight: "200px", overflowY: "scroll",
+                                            color: "black",
+
+                                        }}>
+                                            <nav aria-label="main mailbox folders">
+                                                <List>
+                                                    {/* <ListItem disablePadding>
+                                                        <ListItemButton>
+                                                            <ListItemIcon>
+                                                                <InboxIcon />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary="Inbox" />
+                                                        </ListItemButton>
+                                                    </ListItem>
+                                                    <ListItem disablePadding>
+                                                        <ListItemButton>
+                                                            <ListItemIcon>
+                                                                <DraftsIcon />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary="Drafts" />
+                                                        </ListItemButton>
+                                                    </ListItem> */}
+                                                    {data?.map((item, index) => {
+                                                        return (
+                                                            <div key={`${index}-${item.id}}`}>
+                                                                <ListItem alignItems="flex-start" sx={{
+                                                                    cursor: "pointer",
+                                                                    "&:hover": {
+                                                                        bgcolor: "lightgray"
+                                                                    }
+                                                                }}>
+                                                                    <ListItemAvatar>
+                                                                        <Avatar alt="Travis Howard" src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/product/${item.mainImage}`} />
+                                                                    </ListItemAvatar>
+                                                                    <ListItemText
+                                                                        primary={item.name}
+                                                                        secondary={
+                                                                            <>
+                                                                                <Typography
+                                                                                    component="span"
+                                                                                    sx={{ color: 'red', display: 'inline' }}
+                                                                                >
+                                                                                    {item.price} USD
+                                                                                </Typography>
+                                                                                {`          ${item?.name} ,${item?.cpu} ,${item?.ram} ,${item?.rom} ,${item?.screen} ,${item?.os} ,${item?.gpu} ,${item?.type}`}
+                                                                            </>
+                                                                        }
+                                                                    />
+                                                                </ListItem>
+                                                                <Divider variant="inset" component="li" />
+                                                            </div>
+                                                        )
+                                                    })}
+
+
+                                                </List>
+                                            </nav>
+                                            <Divider />
+                                        </Box>
+                                    </div>
+
+                                }
+                            </Box>
+                            {/* <Box sx={{
                                 display: "flex",
                                 alignItems: "center",
                                 alignSelf: "center"
@@ -224,7 +274,7 @@ function ResponsiveAppBar() {
                                     }}
                                     placeholder="Search…"
                                     value={search}
-                                    onFocus={(e) => { setAnchorEl(e.currentTarget) }}
+                                    onFocus={(e) => {  setAnchorEl(e.currentTarget) }}
                                     onChange={(e) => {
 
                                         setSearch(e.target.value)
@@ -243,7 +293,7 @@ function ResponsiveAppBar() {
                                         horizontal: 'left',
                                     }}
                                 />
-                            </Box>
+                            </Box> */}
                         </FormControl>
                         <Box sx={{
                             display: "flex",

@@ -51,7 +51,8 @@ export default function CardProduct(props: IProps) {
     const { product } = props;
     const [expanded, setExpanded] = React.useState(false);
 
-    const handleExpandClick = () => {
+    const handleExpandClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
         setExpanded(!expanded);
     };
 
@@ -78,7 +79,7 @@ export default function CardProduct(props: IProps) {
                     lineHeight: "1.5",
 
                 }}>
-                    {`${product?.name} ,${product?.cpu} ,${product?.ram} ,${product?.rom} ,${product?.screen} ,${product?.os} ,${product?.gpu} ,${product?.type}`}ákhdakljsdhasjkdhasjkd
+                    {`${product?.name} ,${product?.cpu} ,${product?.ram} ,${product?.rom} ,${product?.screen} ,${product?.os} ,${product?.gpu} ,${product?.type}`}
                 </Typography>
                 <Typography variant="h5" sx={{ color: 'red', fontWeight: 'bold', textAlign: 'right' }}>
                     {product.price} USD

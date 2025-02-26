@@ -13,6 +13,7 @@ import CardProduct from "./card.product";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { sendRequest } from "@/utils/api";
+import Link from "next/link";
 interface IProps {
     factories?: IFactory[],
     data?: IProduct[],
@@ -116,7 +117,9 @@ const HomePage = (props: IProps) => {
                                 data && data.map((product, index) => {
                                     return (
                                         <Grid2 size={4} key={index}>
-                                            <CardProduct product={product} />
+                                            <Link href={product.id.toString()} style={{ textDecoration: "none" }}>
+                                                <CardProduct product={product} />
+                                            </Link>
                                         </Grid2>
                                     )
                                 }
