@@ -8,6 +8,8 @@ import SwiperProduct from './swiper.product';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Box, Breadcrumbs, Button, Container, Grid2, Link, Typography } from '@mui/material';
 import ParameterProduct from './parameter.product';
+import { addCart } from '@/utils/action/actionUser';
+import { useCurrentApp } from '@/context/app.context';
 interface SwiperStyle extends React.CSSProperties {
     '--swiper-navigation-color': string;
     '--swiper-pagination-color': string;
@@ -18,7 +20,7 @@ interface IProps {
 export default function DetailProduct(props: IProps) {
     const { product } = props
     const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
-
+    const { fetchCart } = useCurrentApp();
     return (
         <Container style={{
             minHeight: "80vh",
@@ -152,7 +154,12 @@ export default function DetailProduct(props: IProps) {
                             gap: 2,
                             marginTop: 3
                         }}>
-                            <Button variant="outlined" sx={{ borderRadius: 5 }} color='error'>
+                            <Button variant="outlined" sx={{ borderRadius: 5 }} color='error'
+                                onClick={() => {
+                                    addCart(product?.id!)
+                                    fetchCart()
+                                }}
+                            >
                                 <ShoppingCartIcon />
                             </Button>
                             <Button color='error' variant="contained" sx={{ width: "100%", height: 60, borderRadius: 5 }}>Mua ngay</Button>

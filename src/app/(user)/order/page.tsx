@@ -1,6 +1,6 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import CartPage from "@/component/layout/user/cart/cart.page";
 import DetailProduct from "@/component/layout/user/detail/detail.product"
+import OrderPage from "@/component/layout/user/order/order.page";
 import { sendRequest } from "@/utils/api"
 import { getServerSession } from "next-auth";
 
@@ -17,5 +17,5 @@ export default async function Page() {
         },
     })
     const carts = res.data?.carts
-    return <CartPage carts={carts} />
+    return <OrderPage carts={carts} />
 }
