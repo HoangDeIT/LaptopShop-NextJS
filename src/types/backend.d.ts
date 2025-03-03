@@ -67,6 +67,7 @@ declare global {
         updatedAt: string,
         createdBy: string,
         updatedBy: string,
+        laptopImage: string
         // deleted: false,
         // deletedAt: null
     }

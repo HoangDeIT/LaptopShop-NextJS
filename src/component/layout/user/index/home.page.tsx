@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { sendRequest } from "@/utils/api";
 import Link from "next/link";
+import LaptopCategoryPage from "./laptop.category.page";
 interface IProps {
     factories?: IFactory[],
     data?: IProduct[],
@@ -34,6 +35,9 @@ const HomePage = (props: IProps) => {
     const searchParams = useSearchParams()
     const page = searchParams.get("page");
     const filter = searchParams.get("filter");
+    //upstate
+    const [type, setType] = useState<string[]>([])
+    const [factory, setFactory] = useState<number[]>([])
     console.log(filter)
     const getNewPage = () => {
         const url = new URLSearchParams(searchParams);
@@ -59,38 +63,7 @@ const HomePage = (props: IProps) => {
     return (
 
         <Container style={{ minHeight: "100vh" }}>
-            {/* <Swiper
-                slidesPerView={3}
-                spaceBetween={30}
-                pagination={{
-                    clickable: true,
-                }}
-                centeredSlides={true}
-
-                modules={[Pagination, Autoplay]}
-                className="mySwiper"
-                loop={true}
-                autoplay={{
-                    delay: 2500,
-                    disableOnInteraction: false,
-                }}
-
-            >
-                {
-                    factories && factories.map((factory) => {
-                        return (
-                            <SwiperSlide key={factory.id}>
-
-                                <Image src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/factory/${factory.image}`} alt='Logo' width={100} height={100} />
-
-                            </SwiperSlide>
-                        )
-                    })
-                }
-
-
-            </Swiper> */}
-
+            <LaptopCategoryPage factories={factories} factory={factory} setFactory={setFactory} type={type} setType={setType} />
             <Grid2 container spacing={2} sx={{ m: 2 }}>
                 <Grid2 size={4} sx={{
 
@@ -105,7 +78,7 @@ const HomePage = (props: IProps) => {
                         scrollbarWidth: "none"
                     }}>
                         <h1>Filter</h1>
-                        <FilterProduct factories={factories} />
+                        <FilterProduct factories={factories} factory={factory} setFactory={setFactory} type={type} setType={setType} />
                     </div>
 
                 </Grid2>

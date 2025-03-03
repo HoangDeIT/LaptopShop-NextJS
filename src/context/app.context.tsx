@@ -12,7 +12,9 @@ type AppContextType = {
     setCart: React.Dispatch<React.SetStateAction<ICart[]>>,
     fetchCartWithOutCallApi: (id: number, action: "add" | "remove" | "sub") => void,
     setBackDrop: React.Dispatch<React.SetStateAction<boolean>>,
-    backDrop: boolean
+    backDrop: boolean,
+    ticks: number[],
+    setTicks: React.Dispatch<React.SetStateAction<number[]>>
 }
 const ThemeContext = createContext<AppContextType | null>(null);
 
@@ -24,10 +26,12 @@ const AppProvider = (props: IProps) => {
     const [theme, setTheme] = useState<"LIGHT" | "DARK">("LIGHT");
     const [cart, setCart] = useState<ICart[]>([])
     const [backDrop, setBackDrop] = useState(false)
+    const [ticks, setTicks] = useState<number[]>([])
     const fetchCart = async () => {
         setBackDrop(true);
         const res = await getCart();
         const ticks = res.map((item) => item.id);
+        setTicks(ticks);
         setCart(res);
         setBackDrop(false);
     }
@@ -43,6 +47,7 @@ const AppProvider = (props: IProps) => {
                         item.id === id ? { ...item, quantity: item.quantity - 1 } : item
                     );
                 case "remove":
+                    setTicks(ticks.filter((item) => item !== id));
                     return prev.filter((item) => item.id !== id);
                 default:
                     return prev;
@@ -57,7 +62,7 @@ const AppProvider = (props: IProps) => {
     return (
         <ThemeContext.Provider value={{
             theme, setTheme,
-            cart, fetchCart, setCart, fetchCartWithOutCallApi, backDrop, setBackDrop
+            cart, fetchCart, setCart, fetchCartWithOutCallApi, backDrop, setBackDrop, ticks, setTicks
         }}>
             {props.children}
             <BackDropEffect backDrop={backDrop} setBackDrop={setBackDrop} />

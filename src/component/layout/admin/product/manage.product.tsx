@@ -7,14 +7,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { sendRequest } from "@/utils/api";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import debounce from "debounce";
-import { sfAnd, sfEqual, sfGe, sfIn, sfLike, sfLt } from "spring-filter-query-builder";
-import { Dayjs } from "dayjs";
-
-import { revalidateName } from "@/utils/action/action";
+import EditIcon from '@mui/icons-material/Edit';
 import Image from "next/image";
 import ModalAddProduct from "./modal.add.product";
+import PopoverProductFilterAndSearch from "./popover.product.filter.seach";
+import ModalUpdateProduct from "./modal.update.product";
 interface IProps {
     meta?: IMeta,
     products?: IProduct[],
@@ -24,6 +21,7 @@ interface IProps {
 const ManageProduct = (props: IProps) => {
     const { meta, products, factories } = props
     const [openModal, setOpenModal] = useState(false)
+    const [updateModal, setUpdateModal] = useState(false)
     const [openSnackBarRole, setOpenSnackBarRole] = useState(false)
     const [openSnackBarDeleteUser, setOpenSnackBaDeleteUser] = useState(false)
     //state for undo
@@ -32,7 +30,7 @@ const ManageProduct = (props: IProps) => {
     const router = useRouter();
     const pathName = usePathname()
     const searchParams = useSearchParams()
-
+    const [updated, setUpdated] = useState<IProduct>()
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
     const theadRef = useRef(null);
     //state for filter and search
@@ -174,6 +172,7 @@ const ManageProduct = (props: IProps) => {
                 <Button onClick={() => setOpenModal(true)}>Add user</Button>
             </Box>
             <Box sx={{ border: "1px solid gray", padding: 1 }}>
+                <PopoverProductFilterAndSearch factoryList={factories} theadRef={theadRef} />
                 <Sheet
                     variant="outlined"
                     sx={(theme) => ({
@@ -277,6 +276,15 @@ const ManageProduct = (props: IProps) => {
                                             style={{ display: "inline-block" }}>
                                             <DeleteIcon color="error" />
                                         </div>
+                                        <div
+                                            onClick={() => {
+                                                setUpdated(row);
+                                                setUpdateModal(true);
+
+                                            }}>
+                                            <EditIcon color="warning" />
+
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -308,6 +316,7 @@ const ManageProduct = (props: IProps) => {
 
 
             <ModalAddProduct open={openModal} setOpen={setOpenModal} factories={factories} />
+            <ModalUpdateProduct open={updateModal} setOpen={setUpdateModal} product={updated} factories={factories} />
             <Snackbar open={openSnackBarRole} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
                 <Alert
                     onClose={() => setOpenSnackBarRole(false)}

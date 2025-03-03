@@ -26,17 +26,20 @@ const Login = () => {
     const [password, setPassword] = useState("")
     const [errorPassword, setErrorPassword] = useState(false);
     const [errorUserName, setErrorUserName] = useState(false);
+    const [isLoading, setIsLoading] = useState(false)
     const handleClickShowPassword = () => setShowPassword((show) => !show);
     const handleSubmit = async () => {
         if (userName.length < 1) {
             setErrorUserName(true)
         }
+        setIsLoading(true)
         console.log("Da vao day")
         const res = await signIn("credentials", { username: userName, password: password });
         console.log(res)
         if (!res?.error) {
             console.log("success")
         }
+        setIsLoading(false)
 
     }
     return (
@@ -117,7 +120,7 @@ const Login = () => {
                 </FormControl>
 
             </div>
-            <Button variant="contained" sx={{
+            <Button variant="contained" loading={isLoading} sx={{
                 width: "100%",
                 color: "white",
                 '&:hover': {

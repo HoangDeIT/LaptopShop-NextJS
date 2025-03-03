@@ -95,6 +95,7 @@ export default function ModalAddFactory(props: IProps) {
             toast.success("Create success");
 
         } else {
+            console.log(res)
             toast.error(res.error);
 
         }
@@ -122,7 +123,7 @@ export default function ModalAddFactory(props: IProps) {
                         autoFocus
                         required
                         margin="dense"
-                        label="Name"
+                        label="Name factory"
                         type="text"
                         fullWidth
                         variant="standard"
@@ -134,7 +135,7 @@ export default function ModalAddFactory(props: IProps) {
                         required
                         margin="dense"
                         label="Country"
-                        type=""
+                        type="text"
                         fullWidth
                         variant="standard"
                         value={country}
@@ -147,6 +148,9 @@ export default function ModalAddFactory(props: IProps) {
                         role={undefined}
                         variant="contained"
                         tabIndex={-1}
+                        sx={{
+                            marginTop: "20px"
+                        }}
                         startIcon={<CloudUploadIcon />}
                     >
                         Upload files
@@ -194,6 +198,10 @@ export default function ModalAddFactory(props: IProps) {
                         role={undefined}
                         variant="contained"
                         tabIndex={-1}
+                        sx={{
+                            marginLeft: "20px",
+                            marginTop: "20px"
+                        }}
                         startIcon={<CloudUploadIcon />}
                     >
                         Upload files laptop

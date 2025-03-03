@@ -10,6 +10,7 @@ import { Box, Breadcrumbs, Button, Container, Grid2, Link, Typography } from '@m
 import ParameterProduct from './parameter.product';
 import { addCart } from '@/utils/action/actionUser';
 import { useCurrentApp } from '@/context/app.context';
+import { useRouter } from 'next/navigation';
 interface SwiperStyle extends React.CSSProperties {
     '--swiper-navigation-color': string;
     '--swiper-pagination-color': string;
@@ -19,7 +20,7 @@ interface IProps {
 }
 export default function DetailProduct(props: IProps) {
     const { product } = props
-    const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+    const router = useRouter();
     const { fetchCart } = useCurrentApp();
     return (
         <Container style={{
@@ -59,7 +60,7 @@ export default function DetailProduct(props: IProps) {
 
                     </Typography>
                     <div style={{ color: "grey" }}>No: {product?.id}</div>
-                    <div style={{ color: "grey" }}>Quantity: {product?.quantity}</div>
+                    <div style={{ color: "grey" }}>Quantity: {product?.quantity} {product?.quantity == 0 ? <span style={{ color: "red" }}>Out of stock</span> : <span style={{ color: "green" }}>In stock</span>}</div>
                     <Box sx={{
                         backgroundAttachment: 'scroll', // background-attachment
                         backgroundClip: 'border-box', // background-clip
@@ -154,7 +155,9 @@ export default function DetailProduct(props: IProps) {
                             gap: 2,
                             marginTop: 3
                         }}>
-                            <Button variant="outlined" sx={{ borderRadius: 5 }} color='error'
+                            <Button
+                                disabled={product?.quantity! <= 0}
+                                variant="outlined" sx={{ borderRadius: 5 }} color='error'
                                 onClick={() => {
                                     addCart(product?.id!)
                                     fetchCart()
@@ -162,7 +165,11 @@ export default function DetailProduct(props: IProps) {
                             >
                                 <ShoppingCartIcon />
                             </Button>
-                            <Button color='error' variant="contained" sx={{ width: "100%", height: 60, borderRadius: 5 }}>Mua ngay</Button>
+                            <Button
+                                onClick={() => router.push("order?productId=" + product?.id)}
+                                color='error'
+                                disabled={product?.quantity! <= 0}
+                                variant="contained" sx={{ width: "100%", height: 60, borderRadius: 5 }}>Mua ngay</Button>
                         </Box>
                     </Box>
                 </Grid2>

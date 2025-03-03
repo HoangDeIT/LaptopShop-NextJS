@@ -4,7 +4,7 @@ import { JWT } from "next-auth/jwt"
 
 interface IUSer {
     _id: string,
-    username: string,
+    userName: string,
     email: string,
     address: string,
     isVerify: boolean,

@@ -9,15 +9,20 @@ function valuetext(value: number) {
     return `${value}°C`;
 }
 interface IProps {
-    factories?: IFactory[]
+    factories?: IFactory[],
+    type: string[],
+    setType: (v: string[]) => void,
+    factory: number[],
+    setFactory: (v: number[]) => void
+
 }
 const FilterProduct = (props: IProps) => {
-    const { factories } = props
+    const { factories, setFactory, setType, factory, type } = props
     const minPrice = 10;
     const minRam = 10;
     const minRom = 128;
     const minScreen = 10;
-    const [type, setType] = useState<string[]>([])
+
     const [price, setPrice] = useState<[number, number]>([1, 2000]);
     const [ram, setRam] = useState<[number, number]>([1, 256]);
     const [rom, setRom] = useState<[number, number]>([1, 2560]);
@@ -25,7 +30,7 @@ const FilterProduct = (props: IProps) => {
     const [os, setOs] = useState<string>('');
     const [cpu, setCpu] = useState<string>('');
     const [gpu, setGpu] = useState<string>('');
-    const [factory, setFactory] = useState<number[]>([])
+
     const router = useRouter();
     const searchParams = useSearchParams()
     const pathName = usePathname()
@@ -211,7 +216,7 @@ const FilterProduct = (props: IProps) => {
                         <FormControlLabel control={<Checkbox
                             value="NORMAL" checked={type.includes("NORMAL")} onChange={handleChangeType} />} label="NORMAL" />
                         <FormControlLabel control={<Checkbox
-                            value="AL" checked={type.includes("AL")} onChange={handleChangeType} />} label="AL" />
+                            value="AI" checked={type.includes("AI")} onChange={handleChangeType} />} label="AI" />
                         <FormControlLabel control={<Checkbox
                             value="LIGHTWEIGHT" checked={type.includes("LIGHTWEIGHT")} onChange={handleChangeType} />} label="LIGHTWEIGHT" />
                         <FormControlLabel control={<Checkbox

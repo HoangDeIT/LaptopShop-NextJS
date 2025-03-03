@@ -87,7 +87,7 @@ const ManageFactory = (props: IProps) => {
                 justifyContent: "space-between"
             }}>
                 <Typography variant="h3" gutterBottom>
-                    Manage user
+                    Manage factory
                 </Typography>
                 <Button onClick={() => setOpenModal(true)}>Add user</Button>
             </Box>
