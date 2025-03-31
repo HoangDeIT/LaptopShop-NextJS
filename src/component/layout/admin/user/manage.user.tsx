@@ -10,10 +10,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PopoverUserFilter from "./popover.user.filter";
 import PopoverUserSearch from "./popover.user.search";
 import debounce from "debounce";
-import { sfAnd, sfEqual, sfGe, sfIn, sfLike, sfLt } from "spring-filter-query-builder";
+import { sfAnd, sfEqual, sfGe, sfIn, sfLike, sfLt, sfOr } from "spring-filter-query-builder";
 import { Dayjs } from "dayjs";
 import PopoverUserSort from "./popover.user.sort";
 import { revalidateName } from "@/utils/action/action";
+import { Like } from "spring-filter-query-builder/dist/types/comparators";
 interface IProps {
     meta?: IMeta,
     user?: IUser[],
@@ -36,8 +37,8 @@ const ManageUser = (props: IProps) => {
     //state for filter and search
     const [role, setRole] = useState<string[]>([])
     const [type, setType] = useState<string[]>([])
-    const [searchEmail, setSearchEmail] = useState<string>("")
-    const [searchUserName, setSearchUserName] = useState<string>("")
+    const [searchEmail, setSearchEmail] = useState<string[]>([])
+    const [searchUserName, setSearchUserName] = useState<string[]>([])
     const [startDate, setStartDate] = useState<Dayjs | null>(null)
     const [endDate, setEndDate] = useState<Dayjs | null>(null)
 
@@ -45,7 +46,7 @@ const ManageUser = (props: IProps) => {
     const [sort, setSort] = useState<"id" | "createdAt" | "email" | "userName" | "role" | "type" | "createdBy" | null>(null)
     const [sortBy, setSortBy] = useState<"asc" | "desc" | null>(null)
 
-    const debouncedFilter = useRef(debounce((role, type, searchEmail, searchUserName, startDate, endDate, sort, sortBy) => {
+    const debouncedFilter = useRef(debounce((role, type, searchEmail: string[], searchUserName: string[], startDate, endDate, sort, sortBy) => {
         const filterBuilder = []
         if (role.length > 0) {
             filterBuilder.push(sfIn("role", role))
@@ -55,10 +56,19 @@ const ManageUser = (props: IProps) => {
             filterBuilder.push(sfIn("type", type))
         }
         if (searchEmail.length > 0) {
-            filterBuilder.push(sfLike("email", `*${searchEmail}*`, true))
+            const searchBuilder: Like[] = [];
+            searchEmail.forEach((email) => {
+                searchBuilder.push(sfLike("email", `*${email.trim()}*`, true))
+            })
+            filterBuilder.push(sfOr(searchBuilder))
         }
         if (searchUserName.length > 0) {
-            filterBuilder.push(sfLike("userName", `*${searchUserName}*`, true))
+            const searchName: Like[] = [];
+            searchUserName.forEach((name) => {
+                searchName.push(sfLike("userName", `*${name.trim()}*`, true))
+            })
+            filterBuilder.push(sfOr(searchName))
+
         }
         if (startDate !== null && endDate !== null) {
             filterBuilder.push(sfLt("createdAt", endDate.format("YYYY-MM-DD")))

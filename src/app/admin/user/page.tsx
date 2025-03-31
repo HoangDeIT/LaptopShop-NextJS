@@ -2,6 +2,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
 import ManageUser from "@/component/layout/admin/user/manage.user";
 import { sendRequest } from "@/utils/api";
 import { getServerSession } from "next-auth";
+import { Suspense } from "react";
 const ManageUserPage = async (
     {
         searchParams,
@@ -39,7 +40,9 @@ const ManageUserPage = async (
     const user = res.data?.result
     return (
         <>
-            <ManageUser meta={meta} user={user} />
+            <Suspense fallback={<div>Loading...</div>}>
+                <ManageUser meta={meta} user={user} />
+            </Suspense>
         </>
     )
 }

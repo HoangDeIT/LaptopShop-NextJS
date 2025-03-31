@@ -3,13 +3,22 @@ import ManageFactory from "@/component/layout/admin/factory/manage.factory";
 import ManageProduct from "@/component/layout/admin/product/manage.product";
 import { sendRequest } from "@/utils/api";
 import { getServerSession } from "next-auth";
-const ManageProductPage = async () => {
+import { Suspense } from "react";
+const ManageProductPage = async (
+    { searchParams }: { searchParams: Promise<{ filter: string, page: number, size: number, sort: string }> }
+) => {
     const session = await getServerSession(authOptions);
-
+    const { filter, page, size, sort } = await searchParams
     const res = await sendRequest<IBackendRes<IModelPaginate<IProduct>>>({
         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/product`, method: "GET",
         headers: {
             Authorization: `Bearer ${session?.access_token}`,
+        },
+        queryParams: {
+            filter,
+            page,
+            size,
+            sort
         },
         nextOption: {
             next: { tags: ['get-product'] }
@@ -27,9 +36,12 @@ const ManageProductPage = async () => {
     const data = res.data?.result
     const meta = res.data?.meta
     const factories = resFactory.data?.result
+
     return (
         <>
-            <ManageProduct products={data} meta={meta} factories={factories} />
+            <Suspense key={`${filter}-${page}-${size}-${sort}`} fallback={<div>Loading...</div>}>
+                <ManageProduct products={data} meta={meta} factories={factories} />
+            </Suspense>
         </>
     )
 }

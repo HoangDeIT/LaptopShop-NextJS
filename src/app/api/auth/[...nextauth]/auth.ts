@@ -189,7 +189,7 @@ export const authOptions: AuthOptions = {
         //     }
         // }
     },
-    pages: {
-        signIn: '/auth/signin',
-    }
+    // pages: {
+    //     signIn: '/login',
+    // }
 }

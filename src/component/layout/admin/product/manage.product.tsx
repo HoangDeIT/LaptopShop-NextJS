@@ -12,6 +12,7 @@ import Image from "next/image";
 import ModalAddProduct from "./modal.add.product";
 import PopoverProductFilterAndSearch from "./popover.product.filter.seach";
 import ModalUpdateProduct from "./modal.update.product";
+import PopoverSortProduct from "./popover.sort";
 interface IProps {
     meta?: IMeta,
     products?: IProduct[],
@@ -22,8 +23,8 @@ const ManageProduct = (props: IProps) => {
     const { meta, products, factories } = props
     const [openModal, setOpenModal] = useState(false)
     const [updateModal, setUpdateModal] = useState(false)
-    const [openSnackBarRole, setOpenSnackBarRole] = useState(false)
-    const [openSnackBarDeleteUser, setOpenSnackBaDeleteUser] = useState(false)
+    const [openSnackBarUpdate, setOpenSnackBarUpdate] = useState(false)
+    const [openSnackBarDelete, setOpenSnackBaDelete] = useState(false)
     //state for undo
     const [deleteId, setDeleteId] = useState<number>()
     const session = useSession();
@@ -34,131 +35,33 @@ const ManageProduct = (props: IProps) => {
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
     const theadRef = useRef(null);
     //state for filter and search
-    const [filter, setFilter] = useState<{
-        maxPrice: number,
-        minPrice: number,
-        minQuantity: number,
-        maxQuantity: number,
-        minSold: number,
-        maxSold: number,
-        factory: string,
-        type: string,
-        cpu: string,
-        maxRom: number,
-        minRom: number,
-        maxRam: number,
-        minRam: number,
-        minScreen: number,
-        maxScreen: number,
-        os: string,
-        gpu: string,
-        minCreatedAt: string,
-        maxCreatedAt: string
-    } | null>(null)
 
-    //state for sort
-    const [sort, setSort] = useState<"id" | "createdAt" | "email" | "userName" | "role" | "type" | "createdBy" | null>(null)
-    const [sortBy, setSortBy] = useState<"asc" | "desc" | null>(null)
+    const handleDeleteProduct = async () => {
+        console.log(deleteId)
+        const res = await sendRequest({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product/${deleteId}`, method: "DELETE", headers: {
+                Authorization: `Bearer ${session?.data?.access_token}`,
+            }
+        })
+        console.log(res)
+        setAnchorEl(null);
+        setOpenSnackBaDelete(true);
+        console.log("truoc khi refresh")
 
-    // const debouncedFilter = useRef(debounce((role, type, searchEmail, searchUserName, startDate, endDate, sort, sortBy) => {
-    //     const filterBuilder = []
-    //     if (role.length > 0) {
-    //         filterBuilder.push(sfIn("role", role))
-    //     }
-    //     if (type.length > 0) {
-    //         filterBuilder.push(sfIn("type", type))
-    //     }
-    //     if (searchEmail.length > 0) {
-    //         filterBuilder.push(sfLike("email", `*${searchEmail}*`, true))
-    //     }
-    //     if (searchUserName.length > 0) {
-    //         filterBuilder.push(sfLike("userName", `*${searchUserName}*`, true))
-    //     }
-    //     if (startDate !== null && endDate !== null) {
-    //         filterBuilder.push(sfLt("createdAt", endDate.format("YYYY-MM-DD")))
-    //         filterBuilder.push(sfGe("createdAt", startDate.format("YYYY-MM-DD")))
-    //     }
-    //     if (role.length !== 0 || type.length !== 0 || searchEmail.length !== 0 || searchUserName.length !== 0 || startDate !== null || endDate !== null) {
-    //         const filter = sfAnd(filterBuilder);
-    //         const url = new URLSearchParams(searchParams);
-    //         url.set("filter", filter.toString())
-    //         router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-    //     } else {
-    //         const url = new URLSearchParams(searchParams);
-    //         url.delete("filter");
-    //         router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-    //     }
+        await router.refresh();
+        console.log("sau khi refresh")
+    }
+    const handleUndoDeleteProduct = async () => {
+        const res = await sendRequest({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product/${deleteId}`, method: "POST", headers: {
+                Authorization: `Bearer ${session?.data?.access_token}`,
+            }
+        })
+        router.refresh();
+        setDeleteId(0);
+        setOpenSnackBaDelete(false);
 
-    // }, 1000)).current
-    // useEffect(() => {
-    //     //han che goi api qua nhieu
-    //     debouncedFilter(role, type, searchEmail, searchUserName, startDate, endDate, sort, sortBy);
-    // }, [role, type, searchEmail, searchUserName, startDate, endDate])
-    // //@ts-ignore
-    // useEffect(() => {
-    //     const sortFunction = async () => {
-    //         if (sort && sortBy) {
-    //             const url = new URLSearchParams(searchParams);
-    //             url.set("sort", `${sort},${sortBy}`)
-    //             await revalidateName("get-user");
-
-    //             router.replace(`${pathName}?${url.toString()}`, { scroll: false })
-    //         }
-    //     }
-    //     sortFunction()
-    // }, [sort, sortBy])
-    // const updateRole = async (role: "ADMIN" | "USER", id: number) => {
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "PATCH", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         },
-    //         body: {
-    //             role, id
-    //         }
-    //     })
-
-    //     setOpenSnackBarRole(true);
-    //     // await revalidateName("get-user");
-    //     router.refresh()
-
-    // }
-    // const handleUndoRole = async () => {
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "PATCH", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         },
-    //         body: {
-    //             role: changeUndo?.role, id: changeUndo?.id
-    //         }
-    //     })
-    //     setChangeUndo(null)
-    //     setOpenSnackBarRole(false)
-    //     router.refresh();
-    // }
-    // const handleDeleteUser = async () => {
-
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user/${deleteId}`, method: "DELETE", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         }
-    //     })
-    //     setAnchorEl(null);
-    //     setOpenSnackBaDeleteUser(true);
-
-    //     await revalidateName("get-user");
-    //     router.refresh();
-    // }
-    // const handleUndoDeleteUser = async () => {
-    //     const res = await sendRequest({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user/${deleteId}`, method: "POST", headers: {
-    //             Authorization: `Bearer ${session?.data?.access_token}`,
-    //         }
-    //     })
-    //     router.refresh();
-    //     setDeleteId(0);
-    //     setOpenSnackBaDeleteUser(false);
-
-    // }
+    }
 
     return (
         <Container maxWidth={false}>
@@ -173,6 +76,7 @@ const ManageProduct = (props: IProps) => {
             </Box>
             <Box sx={{ border: "1px solid gray", padding: 1 }}>
                 <PopoverProductFilterAndSearch factoryList={factories} theadRef={theadRef} />
+                <PopoverSortProduct theadRef={theadRef} />
                 <Sheet
                     variant="outlined"
                     sx={(theme) => ({
@@ -267,24 +171,28 @@ const ManageProduct = (props: IProps) => {
                                     <td>{row.quantity}</td>
                                     <td>{row.gpu}</td>
                                     <td>{row.os}</td>
-                                    <td>
+                                    <td >
+                                        <Box sx={{
+                                            display: "flex",
+                                            justifyContent: "space-around"
+                                        }}>
+                                            <div onClick={(e) => {
+                                                setDeleteId(row.id);
+                                                setAnchorEl(e.currentTarget)
+                                            }}
+                                            >
+                                                <DeleteIcon color="error" />
+                                            </div>
+                                            <div
+                                                onClick={() => {
+                                                    setUpdated(row);
+                                                    setUpdateModal(true);
+                                                }}>
+                                                <EditIcon color="warning" />
 
-                                        <div onClick={(e) => {
-                                            setDeleteId(row.id);
-                                            setAnchorEl(e.currentTarget)
-                                        }}
-                                            style={{ display: "inline-block" }}>
-                                            <DeleteIcon color="error" />
-                                        </div>
-                                        <div
-                                            onClick={() => {
-                                                setUpdated(row);
-                                                setUpdateModal(true);
+                                            </div>
+                                        </Box>
 
-                                            }}>
-                                            <EditIcon color="warning" />
-
-                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -317,28 +225,28 @@ const ManageProduct = (props: IProps) => {
 
             <ModalAddProduct open={openModal} setOpen={setOpenModal} factories={factories} />
             <ModalUpdateProduct open={updateModal} setOpen={setUpdateModal} product={updated} factories={factories} />
-            <Snackbar open={openSnackBarRole} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
+            <Snackbar open={openSnackBarUpdate} autoHideDuration={6000} onClose={() => setOpenSnackBarUpdate(false)}>
                 <Alert
-                    onClose={() => setOpenSnackBarRole(false)}
+                    onClose={() => setOpenSnackBarUpdate(false)}
                     severity="success"
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
                     Update role success
-                    <Button color="inherit" size="small" >
+                    <Button color="inherit" size="small">
                         UNDO
                     </Button>
                 </Alert>
             </Snackbar>
-            <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBaDeleteUser(false)}>
+            <Snackbar open={openSnackBarDelete} autoHideDuration={6000} onClose={() => setOpenSnackBaDelete(false)}>
                 <Alert
-                    onClose={() => setOpenSnackBaDeleteUser(false)}
+                    onClose={() => setOpenSnackBaDelete(false)}
                     severity="warning"
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
-                    Update role success
-                    <Button color="inherit" size="small" >
+                    Delete product success
+                    <Button color="inherit" size="small" onClick={handleUndoDeleteProduct}>
                         UNDO
                     </Button>
                 </Alert>
@@ -363,7 +271,7 @@ const ManageProduct = (props: IProps) => {
                     Cancel
                 </Button>
                 <Button onClick={() => {
-                    //   handleDeleteUser()
+                    handleDeleteProduct()
                 }} color="error" variant="contained" sx={{ m: 1 }}>
                     Confirm
                 </Button>

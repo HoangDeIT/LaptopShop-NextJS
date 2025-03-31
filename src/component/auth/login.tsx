@@ -1,11 +1,11 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, Container, FormControl, FormHelperText, InputLabel, OutlinedInput } from '@mui/material';
 import Link from 'next/link'
@@ -14,13 +14,14 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LoginSocial from './login.social';
 
 import { signIn } from 'next-auth/react';
+import { toast } from 'react-toastify';
 const Login = () => {
     const router = useRouter();
     const validateEmail = (email: string) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
     };
-
+    const searchParams = useSearchParams()
     const [showPassword, setShowPassword] = useState(false);
     const [userName, setUserName] = useState("")
     const [password, setPassword] = useState("")
@@ -34,14 +35,24 @@ const Login = () => {
         }
         setIsLoading(true)
         console.log("Da vao day")
-        const res = await signIn("credentials", { username: userName, password: password });
-        console.log(res)
-        if (!res?.error) {
-            console.log("success")
+        const res = await signIn("credentials", { username: userName, password: password, redirect: false });
+        //@ts-ignore
+        if (res?.error == "CredentialsSignin") {
+            toast.error("Tài khoản hoặc mật khẩu không chính xác ")
+        } else if (res?.error) {
+            toast.error("Tài khoản chưa kích hoạt ,kiểm tra gmail")
+
         }
         setIsLoading(false)
-
+        router.replace("/redirect")
     }
+    useEffect(() => {
+        if (searchParams.get("active") === "true") {
+            toast.success("Tài khoản kích hoạt thành công,vui lòng đăng nhập")
+        } else if (searchParams.get("active") === "false") {
+            toast.error("Tài khoản chưa kích hoạt ,kiểm tra gmail")
+        }
+    }, [searchParams])
     return (
 
         <Container
@@ -69,7 +80,7 @@ const Login = () => {
                         fontWeight: "bold",
                         textDecoration: "none"
                     }}
-                    href={""}>Create now</Link> Get started</p>
+                    href={"/register"}>Create now</Link> Get started</p>
             </div>
             <div style={{
                 display: 'flex',
@@ -119,6 +130,9 @@ const Login = () => {
                     {errorPassword && <FormHelperText>Check your password</FormHelperText>}
                 </FormControl>
 
+            </div>
+            <div onClick={() => router.push("/forgot-password")} style={{ color: "#1877F2", cursor: "pointer" }}>
+                Quên mật khẩu
             </div>
             <Button variant="contained" loading={isLoading} sx={{
                 width: "100%",

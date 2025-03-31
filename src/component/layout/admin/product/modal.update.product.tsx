@@ -59,8 +59,11 @@ export default function ModalUpdateProduct(props: IProps) {
 
     const [ram, setRam] = useState(0);
     const [rom, setRom] = useState(0);
-
-    const [imageDB, setImagesDB] = useState<string[]>([])
+    const [mainImageDB, setMainImageDB] = useState<string | null>(null)
+    const [imagesDB, setImagesDB] = useState<{
+        id: number,
+        image: string
+    }[]>([])
     const [mainImage, setMainImage] = useState<File | null>(null);
     const [images, setImages] = useState<File[] | null>(null);
     const [imageURLs, setImageURLs] = useState<string[]>([]);
@@ -129,79 +132,79 @@ export default function ModalUpdateProduct(props: IProps) {
             setDetailDesc(product.detailDesc);
             setShortDesc(product.shortDesc);
             setType(product.type);
-            setImagesDB(product.images.map((image) => image.image));
+            setMainImageDB(product.mainImage);
+            setImagesDB(product.images.map((image) => ({ id: image.id, image: image.image })));
         }
     }, [product]);
-    // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    //     e.preventDefault();
-    //     //step 1
-    //     console.log("hello guy")
-    //     const name = nameRef.current?.value
-    //     const price = priceRef.current?.value
-    //     const quantity = quantityRef.current?.value
-    //     const cpu = cpuRef.current?.value
-    //     const screen = screenRef.current?.value
-    //     const os = osRef.current?.value
-    //     const detailDesc = detailDescRef.current?.value
-    //     const gpu = gpuRef.current?.value
-    //     const shortDesc = shortDescRef.current?.value
-    //     console.log({
-    //         name, price, quantity, cpu, screen, os, detailDesc, gpu, shortDesc, type, ram, rom,
-    //         factory: {
-    //             id: factory
-    //         }
-    //     })
-    //     const res = await sendRequest<IBackendRes<IProduct>>({
-    //         url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product`, method: "POST", headers: {
-    //             Authorization: `Bearer ${data?.access_token}`,
-    //         },
-    //         body: {
-    //             name, price, quantity, cpu, screen, os, detailDesc, gpu, shortDesc, type, ram, rom,
-    //             factory: {
-    //                 id: factory
-    //             }
-    //         }
-    //     })
-    //     //step 2
-    //     if (res.data) {
-    //         const id = res.data?.id
-    //         const form = new FormData();
-    //         form.append("id", id.toString());
-    //         form.append("file", mainImage as Blob);
-    //         for (let i = 0; i < images!.length; i++) {
-    //             form.append('files', images![i]);
-    //         }
-    //         const res1 = await sendRequest<IBackendRes<IProduct>>({
-    //             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product/upload-image`, method: "POST", headers: {
-    //                 Authorization: `Bearer ${data?.access_token}`,
-    //             },
-    //             body: form
-    //         })
-    //         if (res1.data) {
-    //             toast.success("Create success");
-    //             setOpen(false);
-    //             nameRef.current!.value = ""
-    //             priceRef.current!.value = ""
-    //             quantityRef.current!.value = ""
-    //             cpuRef.current!.value = ""
-    //             screenRef.current!.value = ""
-    //             osRef.current!.value = ""
-    //             detailDescRef.current!.value = ""
-    //             gpuRef.current!.value = ""
-    //             shortDescRef.current!.value = ""
-    //             setFactory("")
-    //             setRam(0)
-    //             setRom(0)
-    //             setMainImage(null)
-    //             setImages(null)
-    //             setImageURLs([])
-    //             setMainImageURL(null)
-    //             router.refresh();
-    //         } else {
-    //             toast.error(res.error);
-    //         }
-    //     }
-    // }
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        //step 1
+
+        const res = await sendRequest<IBackendRes<IProduct>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product`, method: "PATCH", headers: {
+                Authorization: `Bearer ${data?.access_token}`,
+            },
+            body: {
+                id: product?.id, name, price, quantity, cpu, screen, os, detailDesc, gpu, shortDesc, type, ram, rom,
+                mainImage: mainImageDB,
+                factory: {
+                    id: factory
+                },
+
+                images: imagesDB.map((image) => ({ id: image.id }))
+            }
+        })
+
+        console.log(res)
+
+        //step 2
+        if (res.data) {
+
+            const id = res.data?.id
+            const form = new FormData();
+            form.append("id", id.toString());
+            if (mainImage) {
+                form.append("file", mainImage as Blob);
+
+            }
+            if (images) {
+                for (let i = 0; i < images!.length; i++) {
+                    form.append('files', images![i]);
+                }
+
+            }
+
+            const res1 = await sendRequest<IBackendRes<IProduct>>({
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/product/upload-image`, method: "PATCH", headers: {
+                    Authorization: `Bearer ${data?.access_token}`,
+                },
+                body: form
+            })
+            console.log(res1)
+            if (res1.data) {
+                toast.success("Create success");
+                setOpen(false);
+                setName('');
+                setPrice(0);
+                setQuantity(0);
+                setCpu('');
+                setScreen(0);
+                setOs('');
+                setDetailDesc('');
+                setGpu('');
+                setShortDesc('');
+                setRam(0)
+                setRom(0)
+                setMainImage(null)
+                setImages(null)
+                setImageURLs([])
+                setMainImageURL(null)
+                router.refresh();
+            } else {
+                toast.error(res.error);
+            }
+        }
+    }
     return (
         <>
             <Dialog
@@ -210,12 +213,12 @@ export default function ModalUpdateProduct(props: IProps) {
                 open={open}
                 onClose={handleClose}
                 TransitionComponent={Transition}
-            // slotProps={{
-            //     paper: {
-            //         component: 'form',
-            //         onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(event),
-            //     },
-            // }}
+                slotProps={{
+                    paper: {
+                        component: 'form',
+                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => handleSubmit(event),
+                    },
+                }}
             >
                 <DialogTitle>Subscribe</DialogTitle>
                 <DialogContent>
@@ -261,7 +264,7 @@ export default function ModalUpdateProduct(props: IProps) {
 
                                 <MenuItem value={"GAMING"}>GAMING</MenuItem>
                                 <MenuItem value={"NORMAL"}>NORMAL</MenuItem>
-                                <MenuItem value={"AL"}>AL</MenuItem>
+                                <MenuItem value={"AI"}>AI</MenuItem>
                                 <MenuItem value={"LIGHTWEIGHT"}>LIGHTWEIGHT</MenuItem>
                                 <MenuItem value={"BUSINESS"}>BUSINESS</MenuItem>
 
@@ -461,7 +464,7 @@ export default function ModalUpdateProduct(props: IProps) {
 
                     }}>
 
-                        {(imageURLs || imageDB) && (imageURLs?.length > 0 || imageDB?.length > 0) &&
+                        {(imageURLs || imagesDB) && (imageURLs?.length > 0 || imagesDB?.length > 0) &&
                             <Badge badgeContent={
                                 <div style={{
                                     cursor: "pointer"
@@ -469,6 +472,7 @@ export default function ModalUpdateProduct(props: IProps) {
                                     onClick={() => {
                                         imageURLs.forEach(url => URL.revokeObjectURL(url));
                                         setImages(null);
+                                        setImagesDB([]);
                                     }}>
                                     X
                                 </div>
@@ -484,7 +488,7 @@ export default function ModalUpdateProduct(props: IProps) {
 
 
                                         {
-                                            imageDB?.map((item, index) => {
+                                            imagesDB?.map((item, index) => {
                                                 return (
                                                     <Badge badgeContent={
                                                         <div
@@ -493,7 +497,7 @@ export default function ModalUpdateProduct(props: IProps) {
                                                     } color="info" key={index} >
                                                         <ImageListItem >
                                                             <img
-                                                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/product/${item}`}
+                                                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/product/${item.image}`}
                                                                 alt={"preview"}
                                                                 loading="lazy"
                                                             />
@@ -525,7 +529,7 @@ export default function ModalUpdateProduct(props: IProps) {
                         }
 
 
-                        {mainImageURL &&
+                        {mainImageURL ?
                             <Badge badgeContent={
                                 <div style={{
                                     cursor: "pointer"
@@ -538,6 +542,10 @@ export default function ModalUpdateProduct(props: IProps) {
                                 </div>
                             } color="error">
                                 <Image src={mainImageURL} alt={"preview"} width={300} height={300} />
+                            </Badge>
+                            :
+                            <Badge color="error">
+                                <Image src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/product/${mainImageDB}`} alt={"preview"} width={300} height={300} />
                             </Badge>
                         }
                     </Box>

@@ -18,7 +18,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
-import { Avatar, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Avatar, Badge, Menu, MenuItem, Tooltip } from '@mui/material';
 import Image from 'next/image';
 import Logo from "@/../public/LogoAdmin.png"
 import Link from 'next/link';
@@ -38,6 +38,7 @@ interface Props {
      */
     children: React.ReactNode
     window?: () => Window;
+    pendingCount?: number
 }
 
 export default function ResponsiveDrawer(props: Props) {
@@ -121,7 +122,9 @@ export default function ResponsiveDrawer(props: Props) {
                     <ListItem disablePadding>
                         <ListItemButton selected={"/admin/order" === pathname}>
                             <ListItemIcon>
-                                <ListAltIcon />
+                                <Badge badgeContent={props.pendingCount == 0 ? null : props.pendingCount} color="error">
+                                    <ListAltIcon />
+                                </Badge>
                             </ListItemIcon>
                             <ListItemText primary={"Manage Product"} />
                         </ListItemButton>

@@ -1,5 +1,6 @@
+"use client"
 import { Box, Button, Divider, InputAdornment, Popover, Slider, TextField } from "@mui/material"
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
@@ -11,6 +12,9 @@ import Checkbox from '@mui/material/Checkbox';
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { Search } from "@mui/icons-material";
+import debounce from "debounce";
+import { sfAnd, sfGe, sfIn, sfLe, sfLike, sfLt } from "spring-filter-query-builder";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 function valuetext(value: number) {
     return `${value}°C`;
 }
@@ -20,7 +24,6 @@ interface IProps {
 }
 const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
     const [filterEl, setFilterEl] = useState<HTMLTableCellElement | null>(null);
-
     const ITEM_HEIGHT = 50;
     const ITEM_PADDING_TOP = 8;
     const MenuProps = {
@@ -36,13 +39,16 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
     const minRam = 10;
     const minRom = 128;
     const minScreen = 10;
+    const router = useRouter()
+    const pathName = usePathname()
+    const searchParams = useSearchParams()
 
-    const [price, setPrice] = useState<[number, number]>([1, 2000]);
-    const [ram, setRam] = useState<[number, number]>([1, 256]);
-    const [rom, setRom] = useState<[number, number]>([1, 2560]);
-    const [screen, setScreen] = useState<[number, number]>([1, 32]);
-    const [quantity, setQuantity] = useState<[number, number]>([1, 2560]);
-    const [sold, setSold] = useState<[number, number]>([1, 2560]);
+    const [price, setPrice] = useState<[number, number]>([0, 2000]);
+    const [ram, setRam] = useState<[number, number]>([0, 256]);
+    const [rom, setRom] = useState<[number, number]>([0, 2560]);
+    const [screen, setScreen] = useState<[number, number]>([0, 32]);
+    const [quantity, setQuantity] = useState<[number, number]>([0, 2560]);
+    const [sold, setSold] = useState<[number, number]>([0, 2560]);
     const [os, setOs] = useState<string>('');
     const [cpu, setCpu] = useState<string>('');
     const [gpu, setGpu] = useState<string>('');
@@ -52,7 +58,69 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
     const [type, setType] = useState<string[]>([]);
     const [startDate, setStartDate] = useState<Dayjs | null>(null);
     const [endDate, setEndDate] = useState<Dayjs | null>(null);
+    const debouncedFilter = useRef(debounce((price, ram, rom, screen, quantity, sold, os, cpu, gpu, name, factory, type, startDate, endDate) => {
+        const filterBuilder = []
+        if (price[0] >= 0 && price[1] >= price[0]) {
+            filterBuilder.push(sfAnd([sfGe("price", price[0]), sfLe("price", price[1])]))
+        }
+        if (ram[0] >= 0 && ram[1] >= ram[0]) {
+            filterBuilder.push(sfAnd([sfGe("ram", ram[0]), sfLe("ram", ram[1])]))
+        }
+        if (rom[0] >= 0 && rom[1] >= rom[0]) {
+            filterBuilder.push(sfAnd([sfGe("rom", rom[0]), sfLe("rom", rom[1])]))
+        }
+        if (screen[0] >= 0 && screen[1] >= screen[0]) {
+            filterBuilder.push(sfAnd([sfGe("screen", screen[0]), sfLe("screen", screen[1])]))
+        }
+        if (quantity[0] >= 0 && quantity[1] >= quantity[0]) {
+            filterBuilder.push(sfAnd([sfGe("quantity", quantity[0]), sfLe("quantity", quantity[1])]))
+        }
+        if (sold[0] >= 0 && sold[1] >= sold[0]) {
+            filterBuilder.push(sfAnd([sfGe("sold", sold[0]), sfLe("sold", sold[1])]))
+        }
+        if (os.length > 0) {
+            filterBuilder.push(sfLike("os", `*${os}*`, true))
+        }
+        if (cpu.length > 0) {
+            filterBuilder.push(sfLike("cpu", `*${cpu}*`, true))
+        }
+        if (gpu.length > 0) {
+            filterBuilder.push(sfLike("gpu", `*${gpu}*`, true))
+        }
+        if (name.length > 0) {
+            filterBuilder.push(sfLike("name", `*${name}*`, true))
+        }
+        if (factory.length > 0) {
+            filterBuilder.push(sfIn("factory.id", factory))
+        }
+        if (type.length > 0) {
+            filterBuilder.push(sfIn("type", type))
+        }
+        if (startDate !== null && endDate !== null) {
+            filterBuilder.push(sfLt("createdAt", endDate.format("YYYY-MM-DD")))
+            filterBuilder.push(sfGe("createdAt", startDate.format("YYYY-MM-DD")))
+        }
+        if (filterBuilder.length > 0) {
+            const filter = sfAnd(filterBuilder);
+            const url = new URLSearchParams(searchParams);
+            url.set("filter", filter.toString())
+            console.log(url)
+            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
+        } else {
+            const url = new URLSearchParams(searchParams);
+            url.delete("filter");
+            console.log(url)
+            router.replace(`${pathName}?${url.toString()}`, { scroll: false })
+        }
 
+
+
+    }, 1000)).current
+    useEffect(() => {
+        //han che goi api qua nhieu
+        console.log(":v222")
+        debouncedFilter(price, ram, rom, screen, quantity, sold, os, cpu, gpu, name, factory, type, startDate, endDate);
+    }, [price, ram, rom, screen, quantity, sold, os, cpu, gpu, name, factory, type, startDate, endDate])
     const handleChangeFactory = (event: SelectChangeEvent<number[]>) => {
         const {
             target: { value },
@@ -353,16 +421,21 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
                                 disableSwap
                             />
                         </div>
-                        <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
+                        <div style={{ display: "flex", gap: 10, flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                             <TextField
-                                value={os}
-                                onChange={e => setOs(e.target.value)}
-                                label="OS"
+                                value={gpu}
+                                onChange={e => setGpu(e.target.value)}
+                                label="GPU"
                             />
                             <TextField
                                 value={cpu}
                                 onChange={e => setCpu(e.target.value)}
                                 label="CPU"
+                            />
+                            <TextField
+                                value={os}
+                                onChange={e => setOs(e.target.value)}
+                                label="OS"
                             />
                         </div>
                     </div>
@@ -371,22 +444,23 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
 
 
 
-                <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
-                    <TextField
-                        value={os}
-                        onChange={e => setOs(e.target.value)}
-                        label="OS"
-                    />
-                    <TextField
-                        value={cpu}
-                        onChange={e => setCpu(e.target.value)}
-                        label="CPU"
-                    />
-                    <TextField
-                        value={gpu}
-                        onChange={e => setGpu(e.target.value)}
-                        label="GPU"
-                    />
+                <Box sx={{ display: "flex", gap: 2, flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        <TextField label="Price" value={price[0]} type="number" onChange={e => setPrice([e.target.value as any, price[1]])} />
+                        <p>~</p>
+                        <TextField value={price[1]} type="number" onChange={e => setPrice([price[0], e.target.value as any])} />
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        <TextField label="Sold" value={sold[0]} type="number" onChange={e => setSold([e.target.value as any, sold[1]])} />
+                        <p>~</p>
+                        <TextField value={sold[1]} type="number" onChange={e => setSold([sold[0], e.target.value as any])} />
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        <TextField label="Quantity" value={quantity[0]} type="number" onChange={e => setQuantity([e.target.value as any, quantity[1]])} />
+                        <p>~</p>
+                        <TextField value={quantity[1]} type="number" onChange={e => setQuantity([quantity[0], e.target.value as any])} />
+                    </Box>
+
                 </Box>
 
             </Popover>

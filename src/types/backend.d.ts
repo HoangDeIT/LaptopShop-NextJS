@@ -127,4 +127,29 @@ declare global {
         quantity: number;
         product: IProduct;
     }
+    interface IOrder {
+        id: number;
+        user: IUser;
+        orderDetails: IOrderDetail[];
+        totalPrice: number;
+        receiverAddress: string;
+        receiverPhone: string;
+        status: "REFUSED" | "PENDING" | "APPROVED" | "DELIVERED"
+
+
+
+        message: string | null;
+        createdAt: string;
+        updatedAt: string | null;
+        createdBy: string;
+        updatedBy: string | null;
+        deleted: boolean;
+        deletedAt: string | null;
+    }
+
+    interface IOrderDetail {
+        id: number;
+        product: IProduct;
+        quantity: number;
+    }
 }
