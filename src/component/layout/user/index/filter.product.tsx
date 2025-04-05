@@ -14,10 +14,10 @@ interface IProps {
     setType: (v: string[]) => void,
     factory: number[],
     setFactory: (v: number[]) => void
-
+    sort: "asc" | "desc" | "none"
 }
 const FilterProduct = (props: IProps) => {
-    const { factories, setFactory, setType, factory, type } = props
+    const { factories, setFactory, setType, factory, type, sort } = props
     const minPrice = 10;
     const minRam = 10;
     const minRom = 128;
@@ -42,7 +42,7 @@ const FilterProduct = (props: IProps) => {
         os: string,
         cpu: string,
         gpu: string,
-        factory: number[]) => {
+        factory: number[], sort: "asc" | "desc" | "none") => {
         const filterBuilder = []
         if (factory?.length > 0) {
             filterBuilder.push(sfIn("factory.id", factory));
@@ -70,6 +70,11 @@ const FilterProduct = (props: IProps) => {
         const filter = sfAnd(filterBuilder);
         const url = new URLSearchParams(searchParams);
         url.set("filter", filter.toString())
+        if (sort == "none") {
+            url.delete("sort")
+        } else {
+            url.set("sort", `price,${sort}`)
+        }
         url.set("page", "1")
         router.replace(`${pathName}?${url.toString()}`, { scroll: false })
 
@@ -77,7 +82,7 @@ const FilterProduct = (props: IProps) => {
     }, 1000)).current
     useEffect(() => {
         console.log("Test")
-        debouncedFilter(type, price, ram, rom, screen, os, cpu, gpu, factory)
+        debouncedFilter(type, price, ram, rom, screen, os, cpu, gpu, factory, sort)
     }, [type, price, ram, rom, screen, os, cpu, gpu, factory])
     const handleChangeType = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {

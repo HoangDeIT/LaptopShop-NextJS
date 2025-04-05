@@ -29,6 +29,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import CommentIcon from '@mui/icons-material/Comment';
+import { signOut } from 'next-auth/react';
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 interface Props {
@@ -38,7 +39,8 @@ interface Props {
      */
     children: React.ReactNode
     window?: () => Window;
-    pendingCount?: number
+    pendingCount?: number,
+    profile?: IUser
 }
 
 export default function ResponsiveDrawer(props: Props) {
@@ -48,8 +50,11 @@ export default function ResponsiveDrawer(props: Props) {
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
     };
-
-
+    const router = useRouter()
+    const logout = async () => {
+        await signOut({ redirect: false })
+        router.push("/login")
+    }
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
@@ -71,7 +76,19 @@ export default function ResponsiveDrawer(props: Props) {
             setMobileOpen(!mobileOpen);
         }
     };
+    function formatImageUrl(url: string) {
+        if (!url) return "";
 
+        // Kiểm tra nếu ảnh là từ localhost (tức là không có domain hoặc chỉ là tên file)
+        const isLocalhostImage = url.startsWith("/") || /^[a-zA-Z0-9_-]+\.(png|jpg|jpeg|gif|webp)$/i.test(url);
+
+        // Nếu là ảnh localhost, thêm backend URL vào trước
+        if (isLocalhostImage) {
+            return `${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/avatar/${url}`;
+        }
+
+        return url; // Nếu không phải ảnh localhost, trả về URL gốc
+    }
     const drawer = (
         <div>
             {/* <Toolbar /> */}
@@ -126,30 +143,11 @@ export default function ResponsiveDrawer(props: Props) {
                                     <ListAltIcon />
                                 </Badge>
                             </ListItemIcon>
-                            <ListItemText primary={"Manage Product"} />
+                            <ListItemText primary={"Manage Order"} />
                         </ListItemButton>
                     </ListItem>
                 </Link>
-                <Link href={"/admin/banner"} style={{ textDecoration: "none", color: 'inherit' }}>
-                    <ListItem disablePadding>
-                        <ListItemButton selected={"/admin/banner" === pathname}>
-                            <ListItemIcon>
-                                <ViewCarouselIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={"Manage banner"} />
-                        </ListItemButton>
-                    </ListItem>
-                </Link>
-                <Link href={"/admin/comment"} style={{ textDecoration: "none", color: 'inherit' }}>
-                    <ListItem disablePadding>
-                        <ListItemButton selected={"/admin/comment" === pathname}>
-                            <ListItemIcon>
-                                <CommentIcon />
-                            </ListItemIcon>
-                            <ListItemText primary={"Manage Comment"} />
-                        </ListItemButton>
-                    </ListItem>
-                </Link>
+
             </List>
             <Divider />
             {/* <List>
@@ -193,35 +191,43 @@ export default function ResponsiveDrawer(props: Props) {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Box sx={{ flexGrow: 0, marginRight: 20 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                            </IconButton>
-                        </Tooltip>
-                        <Menu
-                            sx={{ mt: '45px' }}
-                            id="menu-appbar"
-                            anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            open={Boolean(anchorElUser)}
-                            onClose={handleCloseUserMenu}
-                        >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+
+                        width: "100%",
+                    }}>
+
+
+                        <Box sx={{ flexGrow: 0, marginRight: 20 }}>
+                            <Tooltip title="Open settings">
+                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                                    <Avatar alt={props?.profile?.userName} src={`${formatImageUrl(props?.profile?.image ?? "")}`} />
+
+                                </IconButton>
+                            </Tooltip>
+                            <Menu
+                                sx={{ mt: '45px' }}
+                                id="menu-appbar"
+                                anchorEl={anchorElUser}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                keepMounted
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                open={Boolean(anchorElUser)}
+                                onClose={handleCloseUserMenu}
+                            >
+                                <MenuItem onClick={handleCloseUserMenu}>
+                                    <Typography sx={{ textAlign: 'center' }} onClick={logout}>Logout</Typography>
                                 </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
+                            </Menu>
+                        </Box>
+                    </div>
                 </Toolbar>
             </AppBar>
             <Box

@@ -70,9 +70,9 @@ const ManageProduct = (props: IProps) => {
                 justifyContent: "space-between"
             }}>
                 <Typography variant="h3" gutterBottom>
-                    Manage user
+                    Manage product
                 </Typography>
-                <Button onClick={() => setOpenModal(true)}>Add user</Button>
+                <Button onClick={() => setOpenModal(true)}>Add product</Button>
             </Box>
             <Box sx={{ border: "1px solid gray", padding: 1 }}>
                 <PopoverProductFilterAndSearch factoryList={factories} theadRef={theadRef} />

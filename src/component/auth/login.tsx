@@ -42,9 +42,11 @@ const Login = () => {
         } else if (res?.error) {
             toast.error("Tài khoản chưa kích hoạt ,kiểm tra gmail")
 
+        } else {
+            router.replace("/redirect")
+
         }
         setIsLoading(false)
-        router.replace("/redirect")
     }
     useEffect(() => {
         if (searchParams.get("active") === "true") {

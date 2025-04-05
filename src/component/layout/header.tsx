@@ -29,18 +29,22 @@ import { sendRequest } from '@/utils/api';
 import { Search } from '@mui/icons-material';
 import InboxIcon from '@mui/icons-material/Inbox';
 import DraftsIcon from '@mui/icons-material/Drafts';
-import { getSession, signIn } from 'next-auth/react';
+import { getSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCurrentApp } from '@/context/app.context';
+import ModalUpdateProduct from './admin/product/modal.update.product';
+import ModalUpdateProfile from './modal.history';
+import ModalProfile from './modal.profile';
+import Link from 'next/link';
 
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-interface IData {
-    title: string,
-    year: number
+
+interface IProps {
+    history?: IOrder[]
+    profile?: IUser
 }
 
-function ResponsiveAppBar() {
+function ResponsiveAppBar({ history, profile }: IProps) {
     const [isShow, setIsShow] = useState<boolean>(false);
     const { cart } = useCurrentApp();
     const [search, setSearch] = useState<string>('');
@@ -49,6 +53,10 @@ function ResponsiveAppBar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
     const [open, setOpen] = useState(false)
     const [isAuth, setIsAuth] = useState<boolean>(false);
+    //update profile
+    const [openModalUpdateProfile, setOpenModalUpdateProfile] = useState(false)
+    const [openProfile, setOpenProfile] = useState(false)
+
     const router = useRouter()
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
@@ -57,7 +65,19 @@ function ResponsiveAppBar() {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+    function formatImageUrl(url: string) {
+        if (!url) return "";
 
+        // Kiểm tra nếu ảnh là từ localhost (tức là không có domain hoặc chỉ là tên file)
+        const isLocalhostImage = url.startsWith("/") || /^[a-zA-Z0-9_-]+\.(png|jpg|jpeg|gif|webp)$/i.test(url);
+
+        // Nếu là ảnh localhost, thêm backend URL vào trước
+        if (isLocalhostImage) {
+            return `${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/avatar/${url}`;
+        }
+
+        return url; // Nếu không phải ảnh localhost, trả về URL gốc
+    }
     const fetchData = async (filter: string) => {
         const res = await sendRequest<IBackendRes<IModelPaginate<IProduct>>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/product`, method: "GET",
@@ -92,7 +112,11 @@ function ResponsiveAppBar() {
     useEffect(() => {
         checkAuth()
     }, [])
+    const logout = async () => {
+        await signOut({ redirect: false })
+        router.push("/login")
 
+    }
     return (
         <>
             <AppBar position="static" sx={{ backgroundColor: "white" }}>
@@ -158,7 +182,7 @@ function ResponsiveAppBar() {
                                     }}
                                     placeholder="Search…"
                                     value={search}
-                                    onBlur={(e) => { setIsShow(false) }}
+                                    onBlur={(e) => { setTimeout(() => setIsShow(false), 300) }}
                                     onFocus={(e) => { setIsShow(true) }}
                                     onChange={(e) => {
                                         setSearch(e.target.value)
@@ -182,25 +206,14 @@ function ResponsiveAppBar() {
                                         }}>
                                             <nav aria-label="main mailbox folders">
                                                 <List>
-                                                    {/* <ListItem disablePadding>
-                                                        <ListItemButton>
-                                                            <ListItemIcon>
-                                                                <InboxIcon />
-                                                            </ListItemIcon>
-                                                            <ListItemText primary="Inbox" />
-                                                        </ListItemButton>
-                                                    </ListItem>
-                                                    <ListItem disablePadding>
-                                                        <ListItemButton>
-                                                            <ListItemIcon>
-                                                                <DraftsIcon />
-                                                            </ListItemIcon>
-                                                            <ListItemText primary="Drafts" />
-                                                        </ListItemButton>
-                                                    </ListItem> */}
+
                                                     {data?.map((item, index) => {
                                                         return (
-                                                            <div key={`${index}-${item.id}}`}>
+                                                            <div key={`${index}-${item.id}}`} onClick={(e) => {
+
+                                                                router.push(`/${item.id}`)
+                                                            }}>
+
                                                                 <ListItem alignItems="flex-start" sx={{
                                                                     cursor: "pointer",
                                                                     "&:hover": {
@@ -226,6 +239,7 @@ function ResponsiveAppBar() {
                                                                     />
                                                                 </ListItem>
                                                                 <Divider variant="inset" component="li" />
+
                                                             </div>
                                                         )
                                                     })}
@@ -239,43 +253,7 @@ function ResponsiveAppBar() {
 
                                 }
                             </Box>
-                            {/* <Box sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                alignSelf: "center"
-                            }}>
-                                <TextField
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <Search />
-                                                </InputAdornment>
-                                            ),
-                                        },
-                                    }}
-                                    placeholder="Search…"
-                                    value={search}
-                                    onFocus={(e) => {  setAnchorEl(e.currentTarget) }}
-                                    onChange={(e) => {
 
-                                        setSearch(e.target.value)
-                                    }}
-                                    sx={{
-                                        border: "1px solid black"
-                                    }}
-                                />
-
-                                <Popover
-                                    open={Boolean(anchorEl)}
-                                    anchorEl={anchorEl}
-                                    onClose={() => setAnchorEl(null)}
-                                    anchorOrigin={{
-                                        vertical: 'bottom',
-                                        horizontal: 'left',
-                                    }}
-                                />
-                            </Box> */}
                         </FormControl>
                         {isAuth ?
                             <Box sx={{
@@ -300,7 +278,7 @@ function ResponsiveAppBar() {
                                 <Box sx={{ flexGrow: 0, marginRight: 20 }}>
                                     <Tooltip title="Open settings">
                                         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                            <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                                            <Avatar alt={profile?.userName} src={`${formatImageUrl(profile?.image ?? "")}`} />
                                         </IconButton>
                                     </Tooltip>
                                     <Menu
@@ -319,11 +297,15 @@ function ResponsiveAppBar() {
                                         open={Boolean(anchorElUser)}
                                         onClose={handleCloseUserMenu}
                                     >
-                                        {settings.map((setting) => (
-                                            <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                                <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                                            </MenuItem>
-                                        ))}
+                                        <MenuItem onClick={handleCloseUserMenu}>
+                                            <Typography sx={{ textAlign: 'center' }}><span onClick={logout}>Logout</span></Typography>
+                                        </MenuItem>
+                                        <MenuItem onClick={handleCloseUserMenu}>
+                                            <Typography sx={{ textAlign: 'center' }}><span onClick={() => setOpenModalUpdateProfile(true)}>History</span></Typography>
+                                        </MenuItem>
+                                        <MenuItem onClick={handleCloseUserMenu}>
+                                            <Typography sx={{ textAlign: 'center' }}><span onClick={() => setOpenProfile(true)}>Profile</span></Typography>
+                                        </MenuItem>
                                     </Menu>
                                 </Box>
                             </Box>
@@ -337,6 +319,8 @@ function ResponsiveAppBar() {
                 </Container>
             </AppBar>
             <CartDrawer open={open} setOpen={setOpen} />
+            <ModalUpdateProfile history={history} open={openModalUpdateProfile} setOpen={setOpenModalUpdateProfile} />
+            <ModalProfile profile={profile} open={openProfile} setOpen={setOpenProfile} />
         </>
     );
 }

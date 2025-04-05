@@ -89,7 +89,7 @@ const ManageFactory = (props: IProps) => {
                 <Typography variant="h3" gutterBottom>
                     Manage factory
                 </Typography>
-                <Button onClick={() => setOpenModal(true)}>Add user</Button>
+                <Button onClick={() => setOpenModal(true)}>Add factory</Button>
             </Box>
             <Box sx={{ border: "1px solid gray", padding: 1 }}>
 
@@ -156,11 +156,11 @@ const ManageFactory = (props: IProps) => {
             <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBarRole(false)}>
                 <Alert
                     onClose={() => setOpenSnackBaDeleteUser(false)}
-                    severity="success"
+                    severity="warning"
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
-                    Update role success
+                    Delete factory success
                     <Button color="inherit" size="small" onClick={handleUndoDeleteFactory}>
                         UNDO
                     </Button>

@@ -9,8 +9,10 @@ const RedirectPage = async () => {
         console.log(session)
         if (session.user.role === "ADMIN") {
             redirect("/admin");
-        } else {
+        } else if (session.user.role === "USER") {
             redirect("/");
+        } else {
+            redirect("/login")
         }
     }
 }

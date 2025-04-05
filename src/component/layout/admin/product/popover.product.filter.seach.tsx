@@ -104,7 +104,7 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
             const filter = sfAnd(filterBuilder);
             const url = new URLSearchParams(searchParams);
             url.set("filter", filter.toString())
-            console.log(url)
+            console.log("How")
             router.replace(`${pathName}?${url.toString()}`, { scroll: false })
         } else {
             const url = new URLSearchParams(searchParams);
@@ -263,7 +263,7 @@ const PopoverProductFilterAndSearch = ({ factoryList, theadRef }: IProps) => {
 
 
                         <FormControl sx={{ m: 1, width: 150 }}>
-                            <InputLabel id="demo-multiple-checkbox-label">Role</InputLabel>
+                            <InputLabel id="demo-multiple-checkbox-label">Factory</InputLabel>
                             <Select
                                 labelId="demo-multiple-checkbox-label"
                                 id="demo-multiple-checkbox"

@@ -1,5 +1,5 @@
 "use client"
-import { Box, Button, Container, Grid2, Skeleton } from "@mui/material"
+import { Box, Button, Container, FormControl, Grid2, InputLabel, MenuItem, Select, Skeleton } from "@mui/material"
 import Image from "next/image";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
@@ -38,6 +38,7 @@ const HomePage = (props: IProps) => {
     //upstate
     const [type, setType] = useState<string[]>([])
     const [factory, setFactory] = useState<number[]>([])
+    const [sort, setSort] = useState<"asc" | "desc" | "none">("none")
     console.log(filter)
     const getNewPage = () => {
         const url = new URLSearchParams(searchParams);
@@ -55,11 +56,24 @@ const HomePage = (props: IProps) => {
             setData([...data, ...props.data!])
         else
             setData(props.data!)
-    }, [page])
+    }, [page, meta])
+    // useEffect(() => {
+    //     setData([...props.data!])
+    // }, [filter])
     useEffect(() => {
-        setData([...props.data!])
-    }, [filter])
-    console.log(data)
+        if (sort !== "none") {
+            const url = new URLSearchParams(searchParams);
+            url.set("sort", `price,${sort}`)
+            url.set("page", "1")
+            router.replace(`${pathName}?${url.toString()}`, { scroll: false });
+        } else {
+            const url = new URLSearchParams(searchParams);
+            url.delete("sort")
+            url.set("page", "1")
+            router.replace(`${pathName}?${url.toString()}`, { scroll: false });
+        }
+
+    }, [sort])
     return (
 
         <Container style={{ minHeight: "100vh" }}>
@@ -78,44 +92,67 @@ const HomePage = (props: IProps) => {
                         scrollbarWidth: "none"
                     }}>
                         <h1>Filter</h1>
-                        <FilterProduct factories={factories} factory={factory} setFactory={setFactory} type={type} setType={setType} />
+                        <FilterProduct factories={factories} factory={factory} setFactory={setFactory} type={type} setType={setType} sort={sort} />
                     </div>
 
                 </Grid2>
-                <Grid2 size={8} container>
-                    {data.length > 0 ?
 
-                        <>
-                            {
-                                data && data.map((product, index) => {
-                                    return (
-                                        <Grid2 size={4} key={index}>
-                                            <Link href={product.id.toString()} style={{ textDecoration: "none" }}>
-                                                <CardProduct product={product} />
-                                            </Link>
-                                        </Grid2>
+                <Grid2 size={8} >
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }} >
+
+
+                        <FormControl>
+                            <InputLabel id="demo-simple-select-label">Sort</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={sort}
+                                label="Sort"
+                                onChange={(event) => setSort(event.target.value as any)}
+                            >
+                                <MenuItem value={"none"}>Không sắp xếp</MenuItem>
+                                <MenuItem value={"asc"}>Tăng dần</MenuItem>
+                                <MenuItem value={"desc"}>Giảm dần</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </div>
+                    <Grid2 container>
+                        {data.length > 0 ?
+
+                            <>
+                                {
+                                    data && data.map((product, index) => {
+                                        return (
+                                            <Grid2 size={4} key={index}>
+                                                <Link href={product.id.toString()} style={{ textDecoration: "none" }}>
+                                                    <CardProduct product={product} />
+                                                </Link>
+                                            </Grid2>
+                                        )
+                                    }
                                     )
                                 }
-                                )
-                            }
-                            {meta!.page !== meta!.pages ?
+                                {meta!.page !== meta!.pages ?
 
-                                <Box sx={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "baseline" }}>
-                                    <Button endIcon={<ExpandMoreIcon />} style={{
-                                        border: "1px solid grey",
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        borderRadius: "35px",
-                                        color: "black"
-                                    }}
-                                        onClick={getNewPage}>Xem thêm {meta?.total! - meta?.pageSize! * meta?.page!} kết quả</Button>
-                                </Box> : <></>
-                            }
-                        </> : <NoData />
-                    }
+                                    <Box sx={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "baseline" }}>
+                                        <Button endIcon={<ExpandMoreIcon />} style={{
+                                            border: "1px solid grey",
+                                            padding: "10px",
+                                            cursor: "pointer",
+                                            borderRadius: "35px",
+                                            color: "black"
+                                        }}
+                                            onClick={getNewPage}>Xem thêm {meta?.total! - meta?.pageSize! * meta?.page!} kết quả</Button>
+                                    </Box> : <></>
+                                }
+                            </> : <NoData />
+                        }
 
+                    </Grid2>
                 </Grid2>
-
             </Grid2>
         </Container>
 

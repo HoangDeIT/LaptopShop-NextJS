@@ -38,8 +38,8 @@ const CartDrawer = (props: IProps) => {
                             flexDirection: "column",
                             height: "100px"
                         }}>
-                            <h4 style={{ margin: 0 }}>Laptop msi</h4>
-                            <p style={{ margin: 0, fontSize: "12px", color: "#ccc" }}>100$ *3</p>
+                            <h4 style={{ margin: 0 }}>{cart.product.name}</h4>
+                            <p style={{ margin: 0, fontSize: "12px", color: "#ccc" }}>{cart.product.price}$ *{cart.product.quantity}</p>
                             <Box display="flex" alignItems="center">
                                 <button
                                     style={{
@@ -125,7 +125,7 @@ const CartDrawer = (props: IProps) => {
                     gap: 10
                 }}>
                     <LocalMallOutlinedIcon sx={{ fontSize: 20 }} />
-                    <p style={{ alignItems: "center" }}>3 item</p>
+                    <p style={{ alignItems: "center" }}>{cart.length} item</p>
                 </div>
                 <div onClick={() => setOpen(false)}>
                     <Button>

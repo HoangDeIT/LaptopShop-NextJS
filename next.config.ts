@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
@@ -11,6 +12,11 @@ const nextConfig: NextConfig = {
         pathname: '/storage/**',
       },
     ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: 10 * 1024 * 1024 * 20, // Tăng giới hạn kích thước body yêu cầu lên 10MB
+    },
   },
 };
 

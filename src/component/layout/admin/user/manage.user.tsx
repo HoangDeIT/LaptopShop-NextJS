@@ -50,7 +50,6 @@ const ManageUser = (props: IProps) => {
         const filterBuilder = []
         if (role.length > 0) {
             filterBuilder.push(sfIn("role", role))
-            console.log("hello guy")
         }
         if (type.length > 0) {
             filterBuilder.push(sfIn("type", type))
@@ -275,7 +274,7 @@ const ManageUser = (props: IProps) => {
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
-                    Update role success
+                    Delete user success
                     <Button color="inherit" size="small" onClick={handleUndoDeleteUser}>
                         UNDO
                     </Button>

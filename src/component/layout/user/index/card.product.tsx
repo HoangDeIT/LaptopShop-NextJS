@@ -67,7 +67,7 @@ export default function CardProduct(props: IProps) {
             />
             <CardContent>
                 <Typography variant="body2" sx={{ color: 'back     ', fontWeight: 'bold' }}>
-                    {`${product?.id}`}
+                    {`${product?.name}`}
                 </Typography>
                 <Typography variant="body2" sx={{
                     color: 'text.secondary',

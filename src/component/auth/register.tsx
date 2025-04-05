@@ -24,10 +24,10 @@ export function Register() {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
     };
-
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [address, setAddress] = useState("")
+    // const [address, setAddress] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [userName, setUserName] = useState("")
@@ -49,6 +49,7 @@ export function Register() {
         if (!validateEmail(email)) {
             setErrorEmail(true)
         }
+        console.log(userName, password, confirmPassword, email)
         const res = await sendRequest<IBackendRes<IRegister>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
             method: "POST",
@@ -56,16 +57,19 @@ export function Register() {
                 userName,
                 password,
                 email,
-                address
+                // address
             }
         });
+
+        console.log(res)
         if (res.statusCode === 200 || res.statusCode === 201) {
             toast.success("Register success")
-            setAddress("")
+            // setAddress("")
             setConfirmPassword("")
             setEmail("")
             setPassword("")
             setUserName("")
+            router.push("/login")
         } else {
             toast.error(res.error ?? "Fail")
         }
@@ -91,14 +95,14 @@ export function Register() {
                 <h1 style={{
                     fontSize: "30px",
 
-                }}>Sign in</h1>
-                <p style={{ color: "grey" }}>Don’t have an account? <Link
+                }}>Sign up</h1>
+                <p style={{ color: "grey" }}>Have an account?<Link
                     style={{
                         color: "#1877F2",
                         fontWeight: "bold",
                         textDecoration: "none"
                     }}
-                    href={""}>Create now</Link> Get started</p>
+                    href={"/login"}>Sign in now</Link></p>
             </div>
             <div style={{
                 display: 'flex',
@@ -116,6 +120,14 @@ export function Register() {
                         errorUserName ? "Check your user name" : ""
                     }
                     onBlur={() => { setErrorUserName(userName.length < 1) }}
+                />
+                <TextField label="email" variant="outlined" onChange={(e) => setEmail(e.target.value)}
+                    error={errorEmail}
+                    helperText={
+                        errorEmail ? "Check your email" : ""
+                    }
+                    value={email}
+                    onBlur={() => { setErrorEmail(!validateEmail(email)) }}
                 />
                 <FormControl sx={{ width: '100%' }} variant="outlined" error={errorPassword}>
                     <InputLabel htmlFor="outlined-adornment-password"
@@ -169,17 +181,10 @@ export function Register() {
                     />
                     {errorConfirmPassword && <FormHelperText>Check your password</FormHelperText>}
                 </FormControl>
-                <TextField label="email" variant="outlined" onChange={(e) => setEmail(e.target.value)}
-                    error={errorEmail}
-                    helperText={
-                        errorEmail ? "Check your email" : ""
-                    }
-                    value={email}
-                    onBlur={() => { setErrorEmail(!validateEmail(email)) }}
-                />
-                <TextField label="address" variant="outlined" onChange={(e) => setAddress(e.target.value)}
+
+                {/* <TextField label="address" variant="outlined" onChange={(e) => setAddress(e.target.value)}
                     value={address}
-                />
+                /> */}
 
             </div>
             <Button variant="contained" sx={{
@@ -195,7 +200,7 @@ export function Register() {
             >
                 Success
             </Button>
-            <Divider sx={{ color: "grey" }}>Or oogin with</Divider>
+            <Divider sx={{ color: "grey" }}>Or login with</Divider>
             <LoginSocial />
         </Container>
 

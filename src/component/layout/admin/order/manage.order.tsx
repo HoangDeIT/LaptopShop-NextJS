@@ -14,20 +14,23 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Alert, Button, Chip, Container, Snackbar, TablePagination } from '@mui/material';
+import { Alert, Button, Chip, Container, Popover, Snackbar, TablePagination } from '@mui/material';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import FaceIcon from '@mui/icons-material/Face';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { sendRequest } from '@/utils/api';
 import { useSession } from 'next-auth/react';
+import RefusedMessage from './refused.message';
+import PopoverOrderFilter from './popover.order.filter';
 
 interface IProps {
     orders?: IOrder[],
     meta?: IMeta
 }
+
 function Row(
-    { order, idChange, setIdChange, statusBefore, setStatusBefore, postStatus, rollBackStatus }:
-        { order?: IOrder, idChange?: number, setIdChange: (v: number) => void, statusBefore?: "REFUSED" | "PENDING" | "APPROVED" | "DELIVERED", setStatusBefore?: any, postStatus?: any, rollBackStatus?: any }) {
+    { order, idChange, setIdChange, statusBefore, setStatusBefore, postStatus, rollBackStatus, setOpenMessage, setAnchorEl, setDeleteIdOrder }:
+        { order?: IOrder, idChange?: number, setIdChange: (v: number) => void, statusBefore?: "REFUSED" | "PENDING" | "APPROVED" | "DELIVERED", setStatusBefore?: any, postStatus?: any, rollBackStatus?: any, setOpenMessage?: any, setAnchorEl?: any, setDeleteIdOrder?: any }) {
 
     const [open, setOpen] = React.useState(false);
     //rollback state
@@ -55,6 +58,7 @@ function Row(
                             onClick={() => {
                                 setIdChange(id)
                                 setStatusBefore(status)
+
                                 postStatus(id, "DELIVERED")
                             }}
                         >DELIVERED</Button>
@@ -62,7 +66,8 @@ function Row(
                             onClick={() => {
                                 setIdChange(id)
                                 setStatusBefore(status)
-                                postStatus(id, "REFUSED")
+                                setOpenMessage(true)
+                                // postStatus(id, "REFUSED")
                             }}
                         >REFUSED</Button>
                     </>
@@ -70,6 +75,8 @@ function Row(
             case 'DELIVERED':
                 return (
                     <p onClick={(e) => {
+                        setAnchorEl(e.currentTarget)
+                        setDeleteIdOrder(id)
 
                     }}
                     >
@@ -90,7 +97,9 @@ function Row(
                             onClick={() => {
                                 setIdChange(id)
                                 setStatusBefore(status)
-                                postStatus(id, "REFUSED")
+                                setOpenMessage(true)
+
+                                // postStatus(id, "REFUSED")
                             }}
                             sx={{ m: 1 }} variant='outlined'>REFUSED</Button>
                     </>
@@ -98,8 +107,9 @@ function Row(
             case 'REFUSED':
                 return (
                     <p onClick={(e) => {
-                        // setDeleteId(row.id);
-                        // setAnchorEl(e.currentTarget)
+                        setAnchorEl(e.currentTarget)
+                        setDeleteIdOrder(id)
+
                     }}
                     >
                         <DeleteIcon color="error" />
@@ -184,14 +194,16 @@ export default function ManageOrder({ orders, meta }: IProps) {
     const [statusBefore, setStatusBefore] = React.useState<"REFUSED" | "PENDING" | "APPROVED" | "DELIVERED">();
     const [idChange, setIdChange] = React.useState<number>(0)
     const { data } = useSession();
-
-    const postStatus = async (id: number, status: "REFUSED" | "PENDING" | "APPROVED" | "DELIVERED") => {
+    const [openMessage, setOpenMessage] = React.useState<boolean>(false)
+    const [message, setMessage] = React.useState<string>("")
+    const theadRef = React.useRef(null);
+    const postStatus = async (id: number, status: "REFUSED" | "PENDING" | "APPROVED" | "DELIVERED", message?: string) => {
         const res = await sendRequest<IBackendRes<IOrder>>({
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/orders`, method: "PATCH", headers: {
                 Authorization: `Bearer ${data?.access_token}`,
             },
             queryParams: {
-                id, action: status
+                id, action: status, message: status === "REFUSED" && message ? message : undefined
             }
         })
         console.log(res)
@@ -215,6 +227,48 @@ export default function ManageOrder({ orders, meta }: IProps) {
         }
         router.refresh()
     }
+    const handleRefused = async () => {
+        await postStatus(idChange, "REFUSED", message)
+        setMessage("");
+    }
+    React.useEffect(() => {
+        if (!openMessage && message && message.length > 0) {
+            handleRefused()
+        }
+    }, [openMessage])
+
+
+    //logic delete
+    const [deleteIdOrder, setDeleteIdOrder] = React.useState<number>(0)
+    const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | null>(null);
+    const [openSnackBarDeleteOrder, setOpenSnackBarDeleteOrder] = React.useState<boolean>(false)
+
+    const handleDeleteOrder = async () => {
+        console.log(deleteIdOrder)
+        const res = await sendRequest({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/orders/${deleteIdOrder}`, method: "DELETE", headers: {
+                Authorization: `Bearer ${data?.access_token}`,
+            }
+        })
+
+        setAnchorEl(null);
+        setOpenSnackBarDeleteOrder(true);
+
+
+        router.refresh();
+
+    }
+    const handleUndoDeleteOrder = async () => {
+        const res = await sendRequest({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/orders/${deleteIdOrder}`, method: "POST", headers: {
+                Authorization: `Bearer ${data?.access_token}`,
+            }
+        })
+        router.refresh();
+        setDeleteIdOrder(0);
+        setOpenSnackBarDeleteOrder(false);
+
+    }
     const [snackBarStatus, setSnackBarStatus] = React.useState<boolean>(false)
     return (
         <Container maxWidth={false}>
@@ -223,16 +277,17 @@ export default function ManageOrder({ orders, meta }: IProps) {
                 justifyContent: "space-between"
             }}>
                 <Typography variant="h3" gutterBottom>
-                    Manage user
+                    Manage order
                 </Typography>
 
             </Box>
             <Box sx={{ border: "1px solid gray", padding: 1 }}>
                 {/* <PopoverProductFilterAndSearch factoryList={factories} theadRef={theadRef} />
                 <PopoverSortProduct theadRef={theadRef} /> */}
+                <PopoverOrderFilter theadRef={theadRef} />
                 <TableContainer component={Paper}>
                     <Table aria-label="collapsible table">
-                        <TableHead>
+                        <TableHead ref={theadRef}>
                             <TableRow>
                                 <TableCell />
                                 <TableCell>ID</TableCell>
@@ -254,7 +309,11 @@ export default function ManageOrder({ orders, meta }: IProps) {
                                     rollBackStatus={rollBackStatus}
                                     idChange={idChange}
                                     setIdChange={setIdChange}
-                                    setStatusBefore={setStatusBefore} />
+                                    setStatusBefore={setStatusBefore}
+                                    setOpenMessage={setOpenMessage}
+                                    setAnchorEl={setAnchorEl}
+                                    setDeleteIdOrder={setDeleteIdOrder}
+                                />
                             ))}
                         </TableBody>
                     </Table>
@@ -296,24 +355,25 @@ export default function ManageOrder({ orders, meta }: IProps) {
                     </Button>
                 </Alert>
             </Snackbar>
+            <RefusedMessage open={openMessage} setOpen={setOpenMessage} message={message} setMessage={setMessage} />
 
 
 
-            {/* <Snackbar open={openSnackBarDeleteUser} autoHideDuration={6000} onClose={() => setOpenSnackBaDeleteUser(false)}>
+            {/* Popup delete */}
+            <Snackbar open={openSnackBarDeleteOrder} autoHideDuration={6000} onClose={() => setOpenSnackBarDeleteOrder(false)}>
                 <Alert
-                    onClose={() => setOpenSnackBaDeleteUser(false)}
+                    onClose={() => setOpenSnackBarDeleteOrder(false)}
                     severity="warning"
                     variant="filled"
                     sx={{ width: '100%' }}
                 >
-                    Update role success
-                    <Button color="inherit" size="small" >
+                    Delete order success
+                    <Button color="inherit" size="small" onClick={() => handleUndoDeleteOrder()}>
                         UNDO
                     </Button>
                 </Alert>
-            </Snackbar> */}
-            {/* Popup delete */}
-            {/* <Popover
+            </Snackbar>
+            <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
                 onClose={() => setAnchorEl(null)}
@@ -332,11 +392,11 @@ export default function ManageOrder({ orders, meta }: IProps) {
                     Cancel
                 </Button>
                 <Button onClick={() => {
-                    //   handleDeleteUser()
+                    handleDeleteOrder()
                 }} color="error" variant="contained" sx={{ m: 1 }}>
                     Confirm
                 </Button>
-            </Popover> */}
+            </Popover>
 
         </Container>
     )

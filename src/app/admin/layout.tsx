@@ -17,9 +17,16 @@ const AdminLayout = async ({
         }
     }
     )
+    const resProfile = await sendRequest<IBackendRes<IUser>>({
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/user`, method: "GET",
+        headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+        },
+    })
+
     return (
         <>
-            <SideBar pendingCount={res.data}>
+            <SideBar pendingCount={res.data} profile={resProfile?.data}>
 
                 {children}
             </SideBar>

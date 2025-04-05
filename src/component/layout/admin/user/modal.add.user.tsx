@@ -38,15 +38,21 @@ export default function ModalAddUser(props: IProps) {
     };
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const res = await sendRequest<IBackendRes<IUser>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "POST", headers: {
-                Authorization: `Bearer ${data?.access_token}`,
-            },
-            body: {
-                email, password, userName, role
-            }
-        })
-        if (res.data) {
+        let res;
+        try {
+            res = await sendRequest<IBackendRes<IUser>>({
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/admin/user`, method: "POST", headers: {
+                    Authorization: `Bearer ${data?.access_token}`,
+                },
+                body: {
+                    email, password, userName, role
+                }
+            })
+        } catch (error) {
+            toast.error("User name và email đã có");
+        }
+
+        if (res?.data) {
             if (meta?.page !== meta?.pageSize) {
                 router.replace(`${pathName}?page=${meta?.pageSize}&size=10`, { scroll: false })
             } else {
@@ -59,7 +65,7 @@ export default function ModalAddUser(props: IProps) {
             setRole("USER")
             setOpen(false);
         } else {
-            toast.error(res.error);
+            toast.error(res?.error ?? "Some thing went wrong");
 
         }
 
@@ -76,12 +82,12 @@ export default function ModalAddUser(props: IProps) {
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>Add new user</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    {/* <DialogContentText>
                         To subscribe to this website, please enter your email address here. We
                         will send updates occasionally.
-                    </DialogContentText>
+                    </DialogContentText> */}
                     <TextField
                         autoFocus
                         required

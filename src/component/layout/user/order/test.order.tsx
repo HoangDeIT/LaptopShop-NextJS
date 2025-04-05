@@ -88,7 +88,7 @@ export default function CheckoutPage({ cart, isCart }: { cart?: ICart[], isCart?
                             </Typography>
                         </Box>
                         <Typography fontSize={14} fontWeight="bold" color="red">
-                            {item.product.price.toLocaleString()} đ
+                            {item.product.price.toLocaleString()} USD * {item.quantity} = {(item.product.price * item.quantity).toLocaleString()} USD
                         </Typography>
                     </Box>
                 ))}
@@ -171,7 +171,7 @@ export default function CheckoutPage({ cart, isCart }: { cart?: ICart[], isCart?
                         <Typography component="span" sx={{ color: "#007aff", cursor: "pointer" }}>
                             Chính sách xử lý dữ liệu cá nhân
                         </Typography>{" "}
-                        của FPT Shop.
+
                     </Typography>
                 </Card>
             </Grid2>

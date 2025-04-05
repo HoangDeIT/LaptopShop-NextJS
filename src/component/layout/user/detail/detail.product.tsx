@@ -27,7 +27,7 @@ export default function DetailProduct(props: IProps) {
             minHeight: "80vh",
             marginTop: "50px"
         }}>
-            <Container maxWidth={false}>
+            {/* <Container maxWidth={false}>
                 <Breadcrumbs aria-label="breadcrumb">
                     <Link underline="hover" color="inherit" href="/">
                         MUI
@@ -41,7 +41,7 @@ export default function DetailProduct(props: IProps) {
                     </Link>
                     <Typography sx={{ color: 'text.primary' }}>Breadcrumbs</Typography>
                 </Breadcrumbs>
-            </Container>
+            </Container> */}
 
             <Grid2 container spacing={4} sx={{
                 minHeight: "80vh"

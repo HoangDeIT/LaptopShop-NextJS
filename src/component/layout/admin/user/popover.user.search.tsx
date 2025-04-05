@@ -20,7 +20,7 @@ const PopoverUserSearch = (props: IProps) => {
             <Button variant="text" endIcon={<Search />}
                 onClick={e => setFilterEl(theadRef.current)}
                 aria-describedby={"filterEl"}
-            >Filter</Button>
+            >Search</Button>
             <Popover
                 open={Boolean(filterEl)}
 

@@ -39,9 +39,8 @@ const ManageProductPage = async (
 
     return (
         <>
-            <Suspense key={`${filter}-${page}-${size}-${sort}`} fallback={<div>Loading...</div>}>
-                <ManageProduct products={data} meta={meta} factories={factories} />
-            </Suspense>
+            <ManageProduct products={data} meta={meta} factories={factories} />
+
         </>
     )
 }

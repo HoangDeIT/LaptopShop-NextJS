@@ -114,11 +114,15 @@ export default function ModalAddProduct(props: IProps) {
     };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!images || !mainImage) {
+            toast.error("Vui lòng nhập ảnh")
+            return;
+        }
         //step 1
         console.log("hello guy")
         const name = nameRef.current?.value
         const price = priceRef.current?.value
-        const quantity = quantityRef.current?.value
+        const quantity = Number(quantityRef.current?.value)
         const cpu = cpuRef.current?.value
         const screen = screenRef.current?.value
         const os = osRef.current?.value
@@ -142,12 +146,17 @@ export default function ModalAddProduct(props: IProps) {
                 }
             }
         })
+
+        if (res.error) {
+            toast.error(res.message ?? "Lỗi")
+        }
         //step 2
         if (res.data) {
             const id = res.data?.id
             const form = new FormData();
             form.append("id", id.toString());
             form.append("file", mainImage as Blob);
+
             for (let i = 0; i < images!.length; i++) {
                 form.append('files', images![i]);
             }
@@ -178,7 +187,7 @@ export default function ModalAddProduct(props: IProps) {
                 setMainImageURL(null)
                 router.refresh();
             } else {
-                toast.error(res.error);
+                toast.error(res.error ?? "Thông tin sai");
             }
         }
     }
@@ -197,12 +206,12 @@ export default function ModalAddProduct(props: IProps) {
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>Add laptop</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    {/* <DialogContentText>
                         To subscribe to this website, please enter your email address here. We
                         will send updates occasionally.
-                    </DialogContentText>
+                    </DialogContentText> */}
                     <Box>
                         <TextField
                             required
@@ -240,7 +249,7 @@ export default function ModalAddProduct(props: IProps) {
 
                                 <MenuItem value={"GAMING"}>GAMING</MenuItem>
                                 <MenuItem value={"NORMAL"}>NORMAL</MenuItem>
-                                <MenuItem value={"AL"}>AL</MenuItem>
+                                <MenuItem value={"AI"}>AI</MenuItem>
                                 <MenuItem value={"LIGHTWEIGHT"}>LIGHTWEIGHT</MenuItem>
                                 <MenuItem value={"BUSINESS"}>BUSINESS</MenuItem>
 
@@ -327,7 +336,7 @@ export default function ModalAddProduct(props: IProps) {
                             sx={{ width: "30%", m: 1 }}
                             inputRef={shortDescRef}
                             id="outlined-textarea"
-                            label="Multiline Placeholder"
+                            label="Short description"
                             placeholder="Short description"
                             multiline
                         />
@@ -336,7 +345,7 @@ export default function ModalAddProduct(props: IProps) {
                             inputRef={detailDescRef}
 
                             id="outlined-textarea"
-                            label="Multiline Placeholder"
+                            label="Long description"
                             placeholder="Long description"
                             multiline
                         />
@@ -354,8 +363,15 @@ export default function ModalAddProduct(props: IProps) {
                             <Input
                                 value={ram}
                                 size="small"
-                                sx={{ width: "80px" }}
-                                onChange={(e) => setRam(parseInt(e.target.value))}
+                                sx={{ width: "100px" }}
+                                onChange={(e) => {
+                                    const newValue = parseInt(e.target.value);
+                                    // Cập nhật giá trị RAM chỉ khi giá trị hợp lệ
+                                    if (!isNaN(newValue)) {
+                                        setRam(newValue);
+                                    }
+
+                                }}
                                 onBlur={() => {
                                     if (ram > 256) setRam(256);
                                     else if (ram < 0) setRam(0);
@@ -381,7 +397,13 @@ export default function ModalAddProduct(props: IProps) {
                             <Input
                                 value={rom}
                                 sx={{ width: "100px" }}
-                                onChange={(e) => setRom(parseInt(e.target.value))}
+                                onChange={(e) => {
+                                    const newValue = parseInt(e.target.value);
+                                    // Cập nhật giá trị RAM chỉ khi giá trị hợp lệ
+                                    if (!isNaN(newValue)) {
+                                        setRom(newValue);
+                                    }
+                                }}
                                 onBlur={() => {
                                     if (rom > 10000) setRom(10000);
                                     else if (rom < 0) setRom(0);
@@ -495,7 +517,7 @@ export default function ModalAddProduct(props: IProps) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Subscribe</Button>
+                    <Button type="submit">Save</Button>
                 </DialogActions>
             </Dialog>
         </>

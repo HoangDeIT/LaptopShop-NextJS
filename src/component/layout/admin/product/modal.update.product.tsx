@@ -135,7 +135,11 @@ export default function ModalUpdateProduct(props: IProps) {
             setMainImageDB(product.mainImage);
             setImagesDB(product.images.map((image) => ({ id: image.id, image: image.image })));
         }
-    }, [product]);
+        if (!open) {
+            setImageURLs([]);
+            setMainImageURL(null);
+        }
+    }, [product, open]);
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         //step 1
@@ -220,12 +224,12 @@ export default function ModalUpdateProduct(props: IProps) {
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>Update laptop</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    {/* <DialogContentText>
                         To subscribe to this website, please enter your email address here. We
                         will send updates occasionally.
-                    </DialogContentText>
+                    </DialogContentText> */}
                     <Box>
                         <TextField
                             required
@@ -386,7 +390,13 @@ export default function ModalUpdateProduct(props: IProps) {
                                 value={ram}
                                 size="small"
                                 sx={{ width: "80px" }}
-                                onChange={(e) => setRam(parseInt(e.target.value))}
+                                onChange={(e) => {
+                                    const newValue = parseInt(e.target.value);
+                                    // Cập nhật giá trị RAM chỉ khi giá trị hợp lệ
+                                    if (!isNaN(newValue)) {
+                                        setRam(newValue);
+                                    }
+                                }}
                                 onBlur={() => {
                                     if (ram > 256) setRam(256);
                                     else if (ram < 0) setRam(0);
@@ -412,7 +422,13 @@ export default function ModalUpdateProduct(props: IProps) {
                             <Input
                                 value={rom}
                                 sx={{ width: "100px" }}
-                                onChange={(e) => setRom(parseInt(e.target.value))}
+                                onChange={(e) => {
+                                    const newValue = parseInt(e.target.value);
+                                    // Cập nhật giá trị RAM chỉ khi giá trị hợp lệ
+                                    if (!isNaN(newValue)) {
+                                        setRom(newValue);
+                                    }
+                                }}
                                 onBlur={() => {
                                     if (rom > 10000) setRom(10000);
                                     else if (rom < 0) setRom(0);
@@ -552,7 +568,7 @@ export default function ModalUpdateProduct(props: IProps) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Subscribe</Button>
+                    <Button type="submit">Update</Button>
                 </DialogActions>
             </Dialog>
         </>

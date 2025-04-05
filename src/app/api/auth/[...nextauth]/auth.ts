@@ -44,10 +44,20 @@ export const authOptions: AuthOptions = {
         GithubProvider({
             clientId: process.env.GITHUB_ID!,
             clientSecret: process.env.GITHUB_SECRET!,
+            authorization: {
+                params: {
+                    prompt: "select_account",
+                },
+            },
         }),
         GOOGLE_FONT_PROVIDER({
             clientId: process.env.GOOGLE_ID!,
             clientSecret: process.env.GOOGLE_SECRET!,
+            authorization: {
+                params: {
+                    prompt: "select_account",
+                },
+            },
         }),
         // ...add more providers here
         CredentialsProvider({

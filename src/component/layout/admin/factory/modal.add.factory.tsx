@@ -92,6 +92,8 @@ export default function ModalAddFactory(props: IProps) {
             setPreviewUrl(null)
             setFile(null)
             setOpen(false);
+            setFileLaptop(null)
+            setPreviewUrlLaptop("")
             toast.success("Create success");
 
         } else {
@@ -113,12 +115,12 @@ export default function ModalAddFactory(props: IProps) {
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>Add factory</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    {/* <DialogContentText>
                         To subscribe to this website, please enter your email address here. We
                         will send updates occasionally.
-                    </DialogContentText>
+                    </DialogContentText> */}
                     <TextField
                         autoFocus
                         required
@@ -247,7 +249,7 @@ export default function ModalAddFactory(props: IProps) {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Subscribe</Button>
+                    <Button type="submit">Save</Button>
                 </DialogActions>
             </Dialog >
         </>
