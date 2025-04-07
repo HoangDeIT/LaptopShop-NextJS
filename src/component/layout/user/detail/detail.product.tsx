@@ -11,6 +11,7 @@ import ParameterProduct from './parameter.product';
 import { addCart } from '@/utils/action/actionUser';
 import { useCurrentApp } from '@/context/app.context';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 interface SwiperStyle extends React.CSSProperties {
     '--swiper-navigation-color': string;
     '--swiper-pagination-color': string;
@@ -22,6 +23,7 @@ export default function DetailProduct(props: IProps) {
     const { product } = props
     const router = useRouter();
     const { fetchCart } = useCurrentApp();
+    const { data } = useSession();
     return (
         <Container style={{
             minHeight: "80vh",
@@ -159,6 +161,10 @@ export default function DetailProduct(props: IProps) {
                                 disabled={product?.quantity! <= 0}
                                 variant="outlined" sx={{ borderRadius: 5 }} color='error'
                                 onClick={() => {
+                                    if (!data?.access_token) {
+                                        router.push("/login?login=false")
+                                        return
+                                    }
                                     addCart(product?.id!)
                                     fetchCart()
                                 }}
@@ -166,7 +172,13 @@ export default function DetailProduct(props: IProps) {
                                 <ShoppingCartIcon />
                             </Button>
                             <Button
-                                onClick={() => router.push("order?productId=" + product?.id)}
+                                onClick={() => {
+                                    if (!data?.access_token) {
+                                        router.push("/login?login=false")
+                                        return
+                                    }
+                                    router.push("order?productId=" + product?.id)
+                                }}
                                 color='error'
                                 disabled={product?.quantity! <= 0}
                                 variant="contained" sx={{ width: "100%", height: 60, borderRadius: 5 }}>Mua ngay</Button>

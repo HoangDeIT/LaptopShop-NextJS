@@ -53,6 +53,8 @@ const Login = () => {
             toast.success("Tài khoản kích hoạt thành công,vui lòng đăng nhập")
         } else if (searchParams.get("active") === "false") {
             toast.error("Tài khoản chưa kích hoạt ,kiểm tra gmail")
+        } else if (searchParams.get("login") === "false") {
+            toast.warning("Vui lòng đăng nhập trước khi sử dụng tính năng này")
         }
     }, [searchParams])
     return (
